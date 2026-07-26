@@ -58,6 +58,7 @@ export interface VocabWord {
   context_text: string
   definition: string
   translation: string
+  pos: string
   context_audio_path: string
   us_audio_path: string
   uk_audio_path: string

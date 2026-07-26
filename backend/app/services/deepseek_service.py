@@ -26,7 +26,10 @@ POLISH_SYSTEM_PROMPT = """你是英文讲道稿的校对员，处理的是"水�
 
 DEFINE_SYSTEM_PROMPT = """你是英语教学助理，需要结合给定的原句语境给出一个单词的解释。这是"水流职事"（Watchman Nee / Witness Lee ministry）讲道内容，
 注意有些词在这个语境下是神学专用含义（例如 dispensing 在这里是"分赐"而不是"配药"），要按语境给出准确释义，而不是给通用词典的第一个义项。
-输出 JSON 对象，包含三个键："definition"（简洁的英文释义，20 词以内）、"translation"（对应中文），不要输出其他内容。"""
+词性也要按这个词在给定原句里实际的语法角色判断，不是这个词全部可能的词性——同一个词在别的句子里词性可能不一样。
+输出 JSON 对象，包含三个键："definition"（简洁的英文释义，20 词以内）、"translation"（对应中文）、"pos"（词性缩写，只能是以下之一：n. v. adj. adv. prep. conj. pron. art. interj.），不要输出其他内容。"""
+
+VALID_POS = {"n.", "v.", "adj.", "adv.", "prep.", "conj.", "pron.", "art.", "interj."}
 
 
 def _chat(system_prompt: str, user_content: str) -> dict:
@@ -79,13 +82,15 @@ def polish_sentences(texts: list[str]) -> list[str]:
 
 def define_word(word: str, context_sentence: str) -> dict:
     if not config.DEEPSEEK_ENABLED:
-        return {"definition": "", "translation": ""}
+        return {"definition": "", "translation": "", "pos": ""}
     try:
         user_content = json.dumps({"word": word, "context": context_sentence}, ensure_ascii=False)
         result = _chat(DEFINE_SYSTEM_PROMPT, user_content)
+        pos = result.get("pos", "").strip().lower()
         return {
             "definition": result.get("definition", ""),
             "translation": result.get("translation", ""),
+            "pos": pos if pos in VALID_POS else "",
         }
     except Exception:
-        return {"definition": "", "translation": ""}
+        return {"definition": "", "translation": "", "pos": ""}

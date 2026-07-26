@@ -59,6 +59,7 @@ class VocabWordOut(BaseModel):
     context_text: str
     definition: str
     translation: str
+    pos: str
     context_audio_path: str
     us_audio_path: str
     uk_audio_path: str

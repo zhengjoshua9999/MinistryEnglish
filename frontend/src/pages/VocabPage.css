@@ -68,9 +68,26 @@
   justify-content: space-between;
 }
 
+.vocab-headword {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+}
+
 .vocab-word {
   font-size: 18px;
   font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.vocab-pos {
+  flex: none;
+  font-size: 12px;
+  font-style: italic;
+  color: var(--muted);
 }
 
 .status-dot {

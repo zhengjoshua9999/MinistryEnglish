@@ -92,6 +92,7 @@ def mark_word(payload: VocabWordCreate, db: Session = Depends(get_db)):
         context_text=context_text,
         definition=definition["definition"],
         translation=definition["translation"],
+        pos=definition["pos"],
         context_audio_path=context_audio_name,
         us_audio_path=us_name,
         uk_audio_path=uk_name,

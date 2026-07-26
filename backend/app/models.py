@@ -95,6 +95,7 @@ class VocabWord(Base):
     context_text: Mapped[str] = mapped_column(Text, default="")
     definition: Mapped[str] = mapped_column(Text, default="")
     translation: Mapped[str] = mapped_column(String, default="")
+    pos: Mapped[str] = mapped_column(String, default="")  # 这个词在标记时那句话里的词性，如 "n." "v."
     context_audio_path: Mapped[str] = mapped_column(String, default="")
     us_audio_path: Mapped[str] = mapped_column(String, default="")
     uk_audio_path: Mapped[str] = mapped_column(String, default="")

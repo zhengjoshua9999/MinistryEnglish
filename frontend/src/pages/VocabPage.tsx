@@ -64,7 +64,10 @@ export default function VocabPage() {
           {words.map((w) => (
             <div key={w.id} className="vocab-card">
               <div className="vocab-card-top">
-                <span className="vocab-word">{w.word}</span>
+                <span className="vocab-headword">
+                  <span className="vocab-word">{w.word}</span>
+                  {w.pos && <span className="vocab-pos">{w.pos}</span>}
+                </span>
                 <button className={`status-dot status-${w.status}`} onClick={() => cycleStatus(w)} title="点击切换状态">
                   {STATUS_LABEL[w.status]}
                 </button>
