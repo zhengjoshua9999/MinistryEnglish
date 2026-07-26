@@ -1,0 +1,63 @@
+.score-panel {
+  margin-top: 16px;
+  padding: 20px;
+  border-radius: 12px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+
+.score-metrics {
+  display: flex;
+  gap: 28px;
+}
+
+.metric {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.metric-value {
+  font-size: 26px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.metric-label {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.tier-good .metric-value {
+  color: var(--good);
+}
+.tier-warn .metric-value {
+  color: var(--warn);
+}
+.tier-bad .metric-value {
+  color: var(--bad);
+}
+
+.score-words {
+  margin-top: 16px;
+  font-size: 16px;
+  line-height: 1.9;
+}
+
+.score-word {
+  padding: 1px 3px;
+  border-radius: 4px;
+  margin-right: 2px;
+}
+
+.score-word.tier-good {
+  color: var(--good);
+}
+.score-word.tier-warn {
+  color: var(--warn);
+  background: color-mix(in srgb, var(--warn) 12%, transparent);
+}
+.score-word.tier-bad {
+  color: var(--bad);
+  background: color-mix(in srgb, var(--bad) 14%, transparent);
+}

@@ -1,0 +1,143 @@
+.upload-page h1 {
+  font-size: 32px;
+}
+
+.upload-page .lede {
+  color: var(--muted);
+  margin-top: 10px;
+  max-width: 56ch;
+}
+
+.dropzone {
+  margin-top: 40px;
+  border: 1.5px dashed var(--line);
+  border-radius: 16px;
+  padding: 64px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.dropzone:hover,
+.dropzone.dragging {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 6%, transparent);
+}
+
+.dropzone-title {
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.dropzone-hint {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.media-list {
+  list-style: none;
+  margin: 32px 0 0;
+  padding: 0;
+  border-top: 1px solid var(--line);
+}
+
+.media-row {
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 4px;
+}
+
+.media-row-top {
+  display: flex;
+  align-items: stretch;
+}
+
+.media-main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: none;
+  border: none;
+  text-align: left;
+  padding: 16px 4px;
+  font-size: 15px;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.media-main:disabled {
+  cursor: default;
+  color: var(--muted);
+}
+
+.media-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.media-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.media-time {
+  font-size: 12px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.status-pill {
+  flex: none;
+  font-size: 12px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--line);
+  color: var(--muted);
+}
+
+.status-pill.status-ready {
+  background: color-mix(in srgb, var(--good) 16%, transparent);
+  color: var(--good);
+}
+
+.status-pill.status-error {
+  background: color-mix(in srgb, var(--bad) 16%, transparent);
+  color: var(--bad);
+}
+
+.media-delete {
+  flex: none;
+  border: none;
+  background: none;
+  color: var(--muted);
+  font-size: 20px;
+  width: 40px;
+  cursor: pointer;
+}
+
+.media-delete:hover {
+  color: var(--bad);
+}
+
+.progress-track {
+  height: 3px;
+  border-radius: 999px;
+  background: var(--line);
+  overflow: hidden;
+  margin: 0 4px 10px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: inherit;
+  transition: width 0.4s ease;
+}

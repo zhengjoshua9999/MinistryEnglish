@@ -1,0 +1,285 @@
+.practice-page h1 {
+  font-size: 26px;
+}
+
+.practice-page .hint {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 13.5px;
+}
+
+.player {
+  width: 100%;
+  margin-top: 24px;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 16px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--line);
+}
+
+.speed-group {
+  display: flex;
+  gap: 6px;
+}
+
+.speed-group button {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--muted);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.speed-group button.active {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.toolbar select {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 13px;
+}
+
+.toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hide-all-btn {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--muted);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.hide-all-btn:hover {
+  color: var(--ink);
+  border-color: var(--accent);
+}
+
+.sentence-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.sentence-row {
+  display: flex;
+  gap: 14px;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.sentence-row.current .sentence-text {
+  color: var(--ink);
+}
+
+.sentence-row:not(.current) .sentence-text {
+  color: var(--muted);
+}
+
+.sentence-num {
+  flex: none;
+  width: 22px;
+  padding-top: 8px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.sentence-num.current {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.sentence-play {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--accent);
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.sentence-row.selected .sentence-play {
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-color: var(--accent);
+}
+
+.sentence-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.sentence-text-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.sentence-text {
+  flex: 1;
+  min-width: 0;
+  font-size: 19px;
+  line-height: 1.7;
+}
+
+.text-placeholder {
+  flex: 1;
+  text-align: left;
+  border: 1px dashed var(--line);
+  background: none;
+  color: var(--muted);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.text-placeholder:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.reveal-toggle {
+  flex: none;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 15px;
+  padding: 4px;
+  opacity: 0.6;
+}
+
+.reveal-toggle:hover {
+  opacity: 1;
+}
+
+.word {
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.word:hover {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+.word.marked {
+  background: color-mix(in srgb, var(--warn) 20%, transparent);
+  color: var(--warn);
+}
+
+.word.diff-hit {
+  color: var(--good);
+}
+
+.word.diff-miss {
+  color: var(--bad);
+  text-decoration: underline wavy color-mix(in srgb, var(--bad) 60%, transparent);
+  text-underline-offset: 3px;
+}
+
+.dictation-input {
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 14px;
+  padding: 8px 12px;
+  resize: vertical;
+  min-height: 38px;
+}
+
+.dictation-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.record-controls {
+  margin-top: 14px;
+}
+
+.record-btn {
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 13.5px;
+  cursor: pointer;
+}
+
+.record-btn.recording {
+  background: var(--bad);
+  border-color: var(--bad);
+}
+
+.record-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.attempt-row {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+}
+
+.attempt-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.attempt-audio {
+  height: 32px;
+  flex: 1;
+  min-width: 0;
+}
+
+.score-btn {
+  flex: none;
+  border: 1px solid var(--accent);
+  background: none;
+  color: var(--accent);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.score-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.loading {
+  color: var(--muted);
+}

@@ -1,0 +1,142 @@
+.vocab-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.vocab-header h1 {
+  font-size: 28px;
+}
+
+.vocab-header .lede {
+  color: var(--muted);
+  margin-top: 6px;
+  font-size: 14px;
+}
+
+.vocab-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.vocab-actions select {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 13px;
+}
+
+.export-link {
+  font-size: 13px;
+  color: var(--accent);
+  text-decoration: none;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 6px 10px;
+}
+
+.empty {
+  margin-top: 48px;
+  color: var(--muted);
+}
+
+.vocab-grid {
+  margin-top: 32px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.vocab-card {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 18px;
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.vocab-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.vocab-word {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.status-dot {
+  border: none;
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 11px;
+  cursor: pointer;
+  background: var(--line);
+  color: var(--muted);
+}
+
+.status-dot.status-mastered {
+  background: color-mix(in srgb, var(--good) 18%, transparent);
+  color: var(--good);
+}
+
+.status-dot.status-reviewing {
+  background: color-mix(in srgb, var(--warn) 18%, transparent);
+  color: var(--warn);
+}
+
+.vocab-def {
+  font-size: 13.5px;
+  color: var(--ink);
+}
+
+.vocab-trans {
+  font-size: 13.5px;
+  color: var(--accent);
+}
+
+.vocab-example {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.vocab-audio-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.vocab-audio-row button {
+  font-size: 12px;
+  border: 1px solid var(--line);
+  background: none;
+  color: var(--ink);
+  border-radius: 6px;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+
+.vocab-delete {
+  align-self: flex-start;
+  margin-top: 6px;
+  border: none;
+  background: none;
+  color: var(--muted);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.vocab-delete:hover {
+  color: var(--bad);
+}
