@@ -50,6 +50,9 @@ export default function PracticePage() {
   const [hiddenIds, setHiddenIds] = useState<Set<number>>(new Set())
   const [dictationText, setDictationText] = useState<Record<number, string>>({})
   const [dictationLogged, setDictationLogged] = useState<Set<number>>(new Set())
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [editingId, setEditingId] = useState<number | null>(null)
+  const [editDraft, setEditDraft] = useState('')
 
   const audioRef = useRef<HTMLAudioElement>(null)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
@@ -158,12 +161,14 @@ export default function PracticePage() {
 
   const onAudioPlay = () => {
     playStartRef.current = Date.now()
+    setIsPlaying(true)
   }
   const onAudioPause = () => {
     if (playStartRef.current !== null) {
       studySecRef.current += (Date.now() - playStartRef.current) / 1000
       playStartRef.current = null
     }
+    setIsPlaying(false)
     persistState() // 顺手把这次暂停时的播放进度存一下，不用等其他字段变化才触发
   }
 
@@ -288,6 +293,29 @@ export default function PracticePage() {
     if (wasHidden) logDictationIfNeeded(s)
   }
 
+  const startEdit = (s: Sentence) => {
+    setEditingId(s.id)
+    setEditDraft(s.text_polished || s.text_raw)
+  }
+
+  const cancelEdit = () => {
+    setEditingId(null)
+    setEditDraft('')
+  }
+
+  const saveEdit = async (s: Sentence) => {
+    const text = editDraft.trim()
+    if (!text) return
+    try {
+      const updated = await api.updateSentenceText(s.id, text)
+      setSentences((prev) => prev.map((row) => (row.id === s.id ? updated : row)))
+      setEditingId(null)
+      setEditDraft('')
+    } catch (e) {
+      alert(`保存失败：${(e as Error).message}`)
+    }
+  }
+
   const allHidden = sentences.length > 0 && sentences.every((s) => hiddenIds.has(s.id))
   const toggleHideAll = () => {
     if (allHidden) sentences.forEach(logDictationIfNeeded)
@@ -355,8 +383,12 @@ export default function PracticePage() {
           return (
             <li key={s.id} className={`sentence-row ${isCurrent ? 'current' : ''} ${isSelected ? 'selected' : ''}`}>
               <span className={`sentence-num ${isCurrent ? 'current' : ''}`}>{s.idx + 1}</span>
-              <button className="sentence-play" onClick={() => playSentence(s, loopTarget)} aria-label="跟读该句">
-                ▶
+              <button
+                className="sentence-play"
+                onClick={() => (isCurrent && isPlaying ? audioRef.current?.pause() : playSentence(s, loopTarget))}
+                aria-label={isCurrent && isPlaying ? '暂停' : '跟读该句'}
+              >
+                {isCurrent && isPlaying ? '⏸' : '▶'}
               </button>
               <div className="sentence-body">
                 <textarea
@@ -372,6 +404,24 @@ export default function PracticePage() {
                     <button className="text-placeholder" onClick={() => toggleHidden(s)}>
                       显示原句对比
                     </button>
+                  ) : editingId === s.id ? (
+                    <div className="sentence-edit">
+                      <textarea
+                        className="sentence-edit-input"
+                        value={editDraft}
+                        onChange={(e) => setEditDraft(e.target.value)}
+                        rows={2}
+                        autoFocus
+                      />
+                      <div className="sentence-edit-actions">
+                        <button className="edit-save" onClick={() => saveEdit(s)}>
+                          保存
+                        </button>
+                        <button className="edit-cancel" onClick={cancelEdit}>
+                          取消
+                        </button>
+                      </div>
+                    </div>
                   ) : (
                     <p className="sentence-text">
                       {text.split(/(\s+)/).map((token, i) => {
@@ -390,6 +440,11 @@ export default function PracticePage() {
                         )
                       })}
                     </p>
+                  )}
+                  {!isHidden && editingId !== s.id && (
+                    <button className="edit-toggle" onClick={() => startEdit(s)} aria-label="编辑字幕文本">
+                      ✎
+                    </button>
                   )}
                   <button className="reveal-toggle" onClick={() => toggleHidden(s)} aria-label="切换文本显示">
                     {isHidden ? '👁' : '🙈'}

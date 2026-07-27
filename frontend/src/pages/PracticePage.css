@@ -162,7 +162,8 @@
   color: var(--accent);
 }
 
-.reveal-toggle {
+.reveal-toggle,
+.edit-toggle {
   flex: none;
   border: none;
   background: none;
@@ -172,8 +173,60 @@
   opacity: 0.6;
 }
 
-.reveal-toggle:hover {
+.reveal-toggle:hover,
+.edit-toggle:hover {
   opacity: 1;
+}
+
+.sentence-edit {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sentence-edit-input {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 17px;
+  line-height: 1.6;
+  padding: 8px 12px;
+  resize: vertical;
+}
+
+.sentence-edit-input:focus {
+  outline: none;
+}
+
+.sentence-edit-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.edit-save,
+.edit-cancel {
+  border-radius: 8px;
+  padding: 5px 14px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.edit-save {
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.edit-cancel {
+  border: 1px solid var(--line);
+  background: none;
+  color: var(--muted);
 }
 
 .word {

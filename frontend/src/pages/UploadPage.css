@@ -8,8 +8,100 @@
   max-width: 56ch;
 }
 
+.category-tabs {
+  margin-top: 28px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.category-tabs > button {
+  border: 1px solid var(--line);
+  background: none;
+  color: var(--muted);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+.category-tabs > button:hover {
+  border-color: var(--accent);
+  color: var(--ink);
+}
+
+.category-tabs > button.active {
+  border-color: transparent;
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  color: var(--accent);
+}
+
+.category-tab {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 2px 2px 2px 4px;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.category-tab.active {
+  border-color: transparent;
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+}
+
+.category-tab > button {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.category-tab > button:first-child {
+  color: var(--muted);
+  padding: 4px 6px;
+}
+
+.category-tab.active > button:first-child {
+  color: var(--accent);
+}
+
+.category-tab-edit,
+.category-tab-remove {
+  color: var(--muted);
+  padding: 4px 6px;
+  border-radius: 999px;
+  opacity: 0;
+  transition: opacity 0.15s, color 0.15s;
+}
+
+.category-tab:hover .category-tab-edit,
+.category-tab:hover .category-tab-remove {
+  opacity: 1;
+}
+
+.category-tab-remove:hover {
+  color: var(--bad);
+}
+
+.category-tab-edit:hover {
+  color: var(--ink);
+}
+
+.category-tab-add {
+  border-style: dashed !important;
+}
+
+.empty-filtered {
+  margin-top: 24px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
 .dropzone {
-  margin-top: 40px;
+  margin-top: 24px;
   border: 1.5px dashed var(--line);
   border-radius: 16px;
   padding: 64px 24px;
@@ -111,6 +203,18 @@
 .status-pill.status-error {
   background: color-mix(in srgb, var(--bad) 16%, transparent);
   color: var(--bad);
+}
+
+.media-category-select {
+  flex: none;
+  align-self: center;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--muted);
+  border-radius: 8px;
+  padding: 5px 8px;
+  font-size: 12.5px;
+  max-width: 120px;
 }
 
 .media-delete {

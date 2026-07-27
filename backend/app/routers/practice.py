@@ -60,9 +60,6 @@ def submit_recording(sentence_id: int, file: UploadFile, db: Session = Depends(g
     # 同一句今天已经录过（哪怕后来被替换掉了），今天就不再重复计数——"复读句数"数的是
     # 覆盖了多少不同的句子，不是按了多少次录音按钮。
     already_shadowed_today = any(old.created_at.date() == datetime.utcnow().date() for old in previous)
-    for old in previous:
-        (RECORDINGS_DIR / old.audio_path).unlink(missing_ok=True)
-        db.delete(old)
 
     token = uuid.uuid4().hex
     raw_path = RECORDINGS_DIR / f"{token}-raw{Path(file.filename).suffix or '.webm'}"
@@ -75,6 +72,11 @@ def submit_recording(sentence_id: int, file: UploadFile, db: Session = Depends(g
         raise HTTPException(400, f"录音处理失败：{e}") from e
     finally:
         raw_path.unlink(missing_ok=True)
+
+    # 新录音已经转码成功，这时候才安全地清掉旧记录——万一上面转码失败，旧录音还在，不会丢
+    for old in previous:
+        (RECORDINGS_DIR / old.audio_path).unlink(missing_ok=True)
+        db.delete(old)
 
     attempt = PracticeAttempt(sentence_id=sentence_id, audio_path=wav_path.name, scored=False)
     db.add(attempt)
@@ -92,6 +94,9 @@ def score_recording(attempt_id: int, db: Session = Depends(get_db)):
     attempt = db.get(PracticeAttempt, attempt_id)
     if not attempt:
         raise HTTPException(404, "找不到该条录音")
+    if attempt.scored:
+        # 已经评过分了，不重复打 Azure 额度、也不重复累计弱词计数
+        return PracticeAttemptOut.model_validate(attempt)
 
     sentence = db.get(Sentence, attempt.sentence_id)
     reference_text = sentence.text_polished or sentence.text_raw

@@ -1,6 +1,22 @@
 from datetime import datetime
+from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field
+
+
+class CategoryOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    name: str
+
+
+class CategoryCreate(BaseModel):
+    name: str = Field(min_length=1, max_length=50)
+
+
+class CategoryUpdate(BaseModel):
+    name: str = Field(min_length=1, max_length=50)
 
 
 class MediaFileOut(BaseModel):
@@ -13,7 +29,12 @@ class MediaFileOut(BaseModel):
     status: str
     progress: float
     error_message: str
+    category_id: Optional[int] = None
     created_at: datetime
+
+
+class MediaCategoryUpdate(BaseModel):
+    category_id: Optional[int] = None
 
 
 class SentenceOut(BaseModel):
@@ -26,6 +47,10 @@ class SentenceOut(BaseModel):
     end_ms: int
     text_raw: str
     text_polished: str
+
+
+class SentenceUpdate(BaseModel):
+    text_polished: str = Field(min_length=1, max_length=2000)
 
 
 class PracticeAttemptOut(BaseModel):

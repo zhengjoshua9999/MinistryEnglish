@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { api, audioClipUrl, type VocabWord } from '../api'
 import './VocabPage.css'
 
@@ -8,13 +8,21 @@ const STATUS_LABEL: Record<VocabWord['status'], string> = {
   mastered: '已掌握',
 }
 
-function play(url: string) {
-  new Audio(url).play().catch(() => {})
-}
-
 export default function VocabPage() {
   const [words, setWords] = useState<VocabWord[]>([])
   const [filter, setFilter] = useState<string>('')
+  // 全页共享一个音频实例：不管连点同一个发音按钮，还是在原声/美式/英式之间来回点，
+  // 任何时刻最多一路声音在响，后点的直接打断前一个，不会叠在一起播。
+  const playerRef = useRef<HTMLAudioElement | null>(null)
+
+  const play = (url: string) => {
+    if (!playerRef.current) playerRef.current = new Audio()
+    const player = playerRef.current
+    player.pause()
+    player.src = url
+    player.currentTime = 0
+    player.play().catch(() => {})
+  }
 
   const refresh = () => api.listVocab(filter || undefined).then(setWords)
 

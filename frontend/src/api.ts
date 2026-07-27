@@ -6,7 +6,13 @@ export interface MediaFile {
   status: 'uploaded' | 'transcribing' | 'ready' | 'error'
   progress: number
   error_message: string
+  category_id: number | null
   created_at: string
+}
+
+export interface Category {
+  id: number
+  name: string
 }
 
 export interface Sentence {
@@ -76,17 +82,46 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const api = {
-  listMedia: () => request<MediaFile[]>('/api/media'),
+  listMedia: (categoryId?: number) =>
+    request<MediaFile[]>(`/api/media${categoryId ? `?category_id=${categoryId}` : ''}`),
   getMedia: (id: number) => request<MediaFile>(`/api/media/${id}`),
   deleteMedia: (id: number) => request(`/api/media/${id}`, { method: 'DELETE' }),
+  setMediaCategory: (id: number, categoryId: number | null) =>
+    request<MediaFile>(`/api/media/${id}/category`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ category_id: categoryId }),
+    }),
 
-  uploadMedia: (file: File) => {
+  uploadMedia: (file: File, categoryId?: number | null) => {
     const form = new FormData()
     form.append('file', file)
+    if (categoryId) form.append('category_id', String(categoryId))
     return request<MediaFile>('/api/media/upload', { method: 'POST', body: form })
   },
 
+  listCategories: () => request<Category[]>('/api/categories'),
+  createCategory: (name: string) =>
+    request<Category>('/api/categories', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name }),
+    }),
+  renameCategory: (id: number, name: string) =>
+    request<Category>(`/api/categories/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name }),
+    }),
+  deleteCategory: (id: number) => request(`/api/categories/${id}`, { method: 'DELETE' }),
+
   getSentences: (mediaId: number) => request<Sentence[]>(`/api/media/${mediaId}/sentences`),
+  updateSentenceText: (sentenceId: number, textPolished: string) =>
+    request<Sentence>(`/api/sentences/${sentenceId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text_polished: textPolished }),
+    }),
 
   submitRecording: (sentenceId: number, blob: Blob) => {
     const form = new FormData()

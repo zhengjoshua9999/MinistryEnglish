@@ -1,11 +1,11 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 
 from app import config
 from app.database import Base, SessionLocal, engine
 from app.models import GlossaryTerm
-from app.routers import glossary, media, practice, sentences, stats, vocab
+from app.routers import categories, glossary, media, practice, sentences, stats, vocab
+from app.services.range_file import serve_file_range
 
 Base.metadata.create_all(bind=engine)
 
@@ -43,10 +43,21 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.mount("/media", StaticFiles(directory=str(config.MEDIA_DIR)), name="media")
-app.mount("/audio_clips", StaticFiles(directory=str(config.AUDIO_CLIPS_DIR)), name="audio_clips")
-app.mount("/recordings", StaticFiles(directory=str(config.RECORDINGS_DIR)), name="recordings")
+@app.get("/media/{filename:path}")
+async def serve_media_file(filename: str, request: Request):
+    return await serve_file_range(request, config.MEDIA_DIR, filename)
 
+
+@app.get("/audio_clips/{filename:path}")
+async def serve_audio_clip_file(filename: str, request: Request):
+    return await serve_file_range(request, config.AUDIO_CLIPS_DIR, filename)
+
+
+@app.get("/recordings/{filename:path}")
+async def serve_recording_file(filename: str, request: Request):
+    return await serve_file_range(request, config.RECORDINGS_DIR, filename)
+
+app.include_router(categories.router, prefix="/api")
 app.include_router(media.router, prefix="/api")
 app.include_router(sentences.router, prefix="/api")
 app.include_router(practice.router, prefix="/api")

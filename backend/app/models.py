@@ -1,9 +1,21 @@
 from datetime import datetime
+from typing import Optional
 
 from sqlalchemy import Float, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
+
+
+class Category(Base):
+    """媒体文件的分类，纯逻辑分组——文件本身还是放在 data/media/ 下用 UUID 命名，
+    不对应真实的磁盘子目录，改分类名字、删分类都不需要挪文件。"""
+
+    __tablename__ = "category"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    name: Mapped[str] = mapped_column(String, unique=True)
+    created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
 
 
 class MediaFile(Base):
@@ -16,6 +28,7 @@ class MediaFile(Base):
     status: Mapped[str] = mapped_column(String, default="uploaded")  # uploaded/transcribing/ready/error
     progress: Mapped[float] = mapped_column(Float, default=0.0)  # 0~1，转写进度条读这个
     error_message: Mapped[str] = mapped_column(String, default="")
+    category_id: Mapped[Optional[int]] = mapped_column(ForeignKey("category.id"), default=None)
     created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
 
     sentences: Mapped[list["Sentence"]] = relationship(back_populates="media", cascade="all, delete-orphan")
