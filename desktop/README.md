@@ -63,27 +63,17 @@ cd desktop && DSH_DEV=1 DSH_RESOURCES_DIR="$PWD/build-resources" npm start
 
 ### 从 GitHub 安装（Intel / M 芯片都适用）
 
-> 仓库是**私有**的，所以 `raw.githubusercontent.com` / Release 附件对匿名 `curl` 一律 404，
-> 必须带登录态。安装脚本已优先使用 `gh`（GitHub CLI）来认证下载 dmg。
-
-**① 仓库内直接跑（推荐，你本地就有代码）：**
+仓库已是**公开**，匿名 `curl | bash` 一条龙即可（自动识别芯片、从最新 Release 下载对应 dmg、挂载安装）：
 
 ```bash
-bash scripts/install-macos.sh
+curl -fsSL https://raw.githubusercontent.com/zhengjoshua9999/MinistryEnglish/main/scripts/install-macos.sh | bash
 ```
 
-**② 在另一台全新 Mac 上（有该仓库访问权限，装好 `gh` 并登录）：**
+- 本机已经 clone 的话，也可直接 `bash scripts/install-macos.sh`。
+- 脚本若检测到已登录的 `gh`（GitHub CLI）会优先用它认证下载（对私有仓库也适用），否则回退匿名 `curl`。
 
-```bash
-brew install gh && gh auth login
-gh api repos/zhengjoshua9999/MinistryEnglish/contents/scripts/install-macos.sh \
-  --jq .content | base64 -d > /tmp/install.sh && bash /tmp/install.sh
-```
-
-脚本会自动识别芯片（arm64 → `...arm64.dmg`，x86_64 → `...x64.dmg`）、用 `gh` 从最新 Release 下载、
+安装脚本会自动识别芯片（arm64 → `...arm64.dmg`，x86_64 → `...x64.dmg`）、
 挂载并把 `职事英语.app` 装进 `/Applications`，还会去掉未签名应用的隔离标记。
-
-> 若将来把仓库设为公开，可换回更短的匿名一条龙：`curl -fsSL https://raw.githubusercontent.com/zhengjoshua9999/MinistryEnglish/main/scripts/install-macos.sh | bash`。
 
 ## 关于签名 / 公证
 
