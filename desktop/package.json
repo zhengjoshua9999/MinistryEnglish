@@ -1,0 +1,18 @@
+{
+  "name": "ministry-english",
+  "productName": "职事英语",
+  "version": "0.1.0",
+  "description": "职事英语 —— 本地优先的字幕生成 + 跟读评分工具",
+  "author": "MinistryEnglish",
+  "license": "MIT",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder"
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8"
+  }
+}

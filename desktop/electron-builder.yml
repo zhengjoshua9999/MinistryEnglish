@@ -1,0 +1,43 @@
+appId: com.ministryenglish.app
+productName: 职事英语
+copyright: Copyright © ${author}
+
+directories:
+  output: release/${version}
+
+# 只把 Electron 外壳代码打进 asar；后端、前端、uv 运行时都走 extraResources，
+# 以真实文件形式放在 Contents/Resources 下，供子进程直接调用。
+files:
+  - main.js
+  - preload.js
+  - assets/**
+  - package.json
+
+asar: true
+
+extraResources:
+  - from: build-resources/backend
+    to: backend
+    filter:
+      - "**/*"
+  - from: build-resources/frontend
+    to: frontend
+    filter:
+      - "**/*"
+  - from: build-resources/bin
+    to: bin
+    filter:
+      - "**/*"
+
+mac:
+  category: public.app-category.education
+  target:
+    - dmg
+  # 本地/自用打包默认不签名；如需分发请配置签名并设置 identity，
+  # 否则 macOS 会提示“已损坏/无法验证开发者”。见 desktop/README.md。
+  identity: null
+  darkModeSupport: true
+
+dmg:
+  title: ${productName} ${version}
+  artifactName: ZhishiYingyu-${version}-${arch}.${ext}

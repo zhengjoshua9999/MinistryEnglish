@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <title>职事英语</title>
+    <style>
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+      }
+      body {
+        background: #0f1115;
+        color: #e6e6e6;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .box {
+        text-align: center;
+        max-width: 560px;
+        padding: 24px;
+      }
+      .spinner {
+        width: 36px;
+        height: 36px;
+        margin: 0 auto 20px;
+        border: 3px solid rgba(255, 255, 255, 0.15);
+        border-top-color: #5aa0ff;
+        border-radius: 50%;
+        animation: spin 0.9s linear infinite;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      h1 {
+        font-size: 18px;
+        margin: 0 0 10px;
+      }
+      #status {
+        color: #9aa0a6;
+        font-size: 14px;
+        line-height: 1.6;
+      }
+      .warn {
+        margin-top: 18px;
+        color: #c9a86a;
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="box">
+      <div class="spinner"></div>
+      <h1>职事英语</h1>
+      <div id="status">正在初始化…</div>
+      <div class="warn">首次运行需要联网下载运行环境与模型，请保持网络连接。</div>
+    </div>
+    <script>
+      // 主进程通过 preload 推送进度文案；就绪后主进程会跳转到真实页面。
+      window.addEventListener('DOMContentLoaded', () => {
+        if (window.ministry && window.ministry.onSetupProgress) {
+          window.ministry.onSetupProgress((message) => {
+            const el = document.getElementById('status');
+            if (el) el.textContent = message;
+          });
+        }
+      });
+    </script>
+  </body>
+</html>

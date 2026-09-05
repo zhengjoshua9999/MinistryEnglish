@@ -1,13 +1,18 @@
-from fastapi import FastAPI, Request
+from pathlib import Path
+
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 
 from app import config
-from app.database import Base, SessionLocal, engine
+from app.database import Base, SessionLocal, engine, migrate_reading_progress, migrate_schema
 from app.models import GlossaryTerm
-from app.routers import categories, glossary, media, practice, sentences, stats, vocab
+from app.routers import categories, glossary, media, practice, reading, sentences, stats, vocab
 from app.services.range_file import serve_file_range
 
 Base.metadata.create_all(bind=engine)
+migrate_schema()
+migrate_reading_progress()
 
 DEFAULT_GLOSSARY = [
     ("Watchman Nee", "人名"),
@@ -34,7 +39,7 @@ def _seed_glossary():
 
 _seed_glossary()
 
-app = FastAPI(title="水流职事英语跟读平台")
+app = FastAPI(title="职事英语")
 
 app.add_middleware(
     CORSMiddleware,
@@ -64,6 +69,7 @@ app.include_router(practice.router, prefix="/api")
 app.include_router(vocab.router, prefix="/api")
 app.include_router(glossary.router, prefix="/api")
 app.include_router(stats.router, prefix="/api")
+app.include_router(reading.router, prefix="/api")
 
 
 @app.get("/api/health")
@@ -73,3 +79,29 @@ def health():
         "deepseek_enabled": config.DEEPSEEK_ENABLED,
         "azure_enabled": config.AZURE_ENABLED,
     }
+
+
+# 当 FRONTEND_DIST 指向构建好的前端静态目录时，用它托管 SPA。
+# 该 catch-all 路由放在所有 API / media 路由之后，因此不会遮蔽它们；
+# 只有未命中的路径才会走到这里，按需返回真实文件或 index.html。
+if config.FRONTEND_DIST and Path(config.FRONTEND_DIST).is_dir():
+    _FE_ROOT = Path(config.FRONTEND_DIST).resolve()
+    _FE_INDEX = _FE_ROOT / "index.html"
+
+    @app.get("/{full_path:path}", include_in_schema=False)
+    async def serve_spa(full_path: str):
+        # 这些前缀都由前面注册的具体路由处理，这里不应命中。
+        if full_path.startswith(("api/", "media/", "audio_clips/", "recordings/")):
+            raise HTTPException(status_code=404, detail="not found")
+
+        candidate = (_FE_ROOT / full_path).resolve()
+        try:
+            candidate.relative_to(_FE_ROOT)
+        except ValueError:
+            # 越权路径，直接返回 index，避免目录穿越。
+            return FileResponse(_FE_INDEX)
+
+        if candidate.is_file():
+            return FileResponse(candidate)
+        # SPA 客户端路由兜底：回到 index.html。
+        return FileResponse(_FE_INDEX)

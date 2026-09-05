@@ -66,7 +66,7 @@ export default function VocabPage() {
       </div>
 
       {words.length === 0 ? (
-        <p className="empty">还没有标记生词。在跟读练习页里点击不认识的单词即可加入这里。</p>
+        <p className="empty">还没有标记生词。在跟读练习页或双语阅读页双击单词即可加入这里。</p>
       ) : (
         <div className="vocab-grid">
           {words.map((w) => (
@@ -83,6 +83,7 @@ export default function VocabPage() {
               {w.definition && <p className="vocab-def">{w.definition}</p>}
               {w.translation && <p className="vocab-trans">{w.translation}</p>}
               <p className="vocab-example">{w.context_text}</p>
+              {w.source_type === 'book' && <p className="vocab-source">来源：书籍阅读（不生成音频）</p>}
               <div className="vocab-audio-row">
                 {w.context_audio_path && (
                   <button onClick={() => play(audioClipUrl(w.context_audio_path))}>▶ 原声</button>

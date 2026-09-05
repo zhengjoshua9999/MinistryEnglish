@@ -103,8 +103,12 @@ class VocabWord(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     word: Mapped[str] = mapped_column(String)
     word_norm: Mapped[str] = mapped_column(String, unique=True)
-    media_id: Mapped[int] = mapped_column(ForeignKey("media_file.id"))
-    sentence_id: Mapped[int] = mapped_column(ForeignKey("sentence.id"))
+    media_id: Mapped[Optional[int]] = mapped_column(ForeignKey("media_file.id"), nullable=True)
+    sentence_id: Mapped[Optional[int]] = mapped_column(ForeignKey("sentence.id"), nullable=True)
+    source_type: Mapped[str] = mapped_column(String, default="media")  # media/book
+    book_paragraph_id: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("book_paragraph.id"), default=None, nullable=True
+    )
     context_text: Mapped[str] = mapped_column(Text, default="")
     definition: Mapped[str] = mapped_column(Text, default="")
     translation: Mapped[str] = mapped_column(String, default="")
@@ -114,3 +118,80 @@ class VocabWord(Base):
     uk_audio_path: Mapped[str] = mapped_column(String, default="")
     status: Mapped[str] = mapped_column(String, default="new")  # new/reviewing/mastered
     created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
+
+
+class Book(Base):
+    __tablename__ = "book"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    title: Mapped[str] = mapped_column(String)
+    english_filename: Mapped[str] = mapped_column(String)
+    chinese_filename: Mapped[str] = mapped_column(String)
+    english_original_name: Mapped[str] = mapped_column(String)
+    chinese_original_name: Mapped[str] = mapped_column(String)
+    status: Mapped[str] = mapped_column(String, default="review")  # review/published/error
+    error_message: Mapped[str] = mapped_column(Text, default="")
+    created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
+
+    chapters: Mapped[list["BookChapter"]] = relationship(
+        back_populates="book", cascade="all, delete-orphan", order_by="BookChapter.idx"
+    )
+    groups: Mapped[list["ReadingGroup"]] = relationship(
+        back_populates="book", cascade="all, delete-orphan", order_by="ReadingGroup.idx"
+    )
+
+
+class BookChapter(Base):
+    __tablename__ = "book_chapter"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    book_id: Mapped[int] = mapped_column(ForeignKey("book.id"), index=True)
+    idx: Mapped[int] = mapped_column(Integer)
+    title: Mapped[str] = mapped_column(String)
+
+    book: Mapped["Book"] = relationship(back_populates="chapters")
+    paragraphs: Mapped[list["BookParagraph"]] = relationship(
+        back_populates="chapter", cascade="all, delete-orphan", order_by="BookParagraph.idx"
+    )
+
+
+class BookParagraph(Base):
+    __tablename__ = "book_paragraph"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    chapter_id: Mapped[int] = mapped_column(ForeignKey("book_chapter.id"), index=True)
+    language: Mapped[str] = mapped_column(String)  # en/zh
+    idx: Mapped[int] = mapped_column(Integer)
+    text: Mapped[str] = mapped_column(Text)
+    kind: Mapped[str] = mapped_column(String, default="paragraph")  # paragraph/heading/note/ignored
+
+    chapter: Mapped["BookChapter"] = relationship(back_populates="paragraphs")
+
+
+class ReadingGroup(Base):
+    __tablename__ = "reading_group"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    book_id: Mapped[int] = mapped_column(ForeignKey("book.id"), index=True)
+    chapter_id: Mapped[int] = mapped_column(ForeignKey("book_chapter.id"), index=True)
+    idx: Mapped[int] = mapped_column(Integer)
+    english_ids_json: Mapped[str] = mapped_column(Text, default="[]")
+    chinese_ids_json: Mapped[str] = mapped_column(Text, default="[]")
+    alignment_type: Mapped[str] = mapped_column(String, default="one_to_one")
+    confidence: Mapped[float] = mapped_column(Float, default=0.0)
+    status: Mapped[str] = mapped_column(String, default="pending_review")
+    note: Mapped[str] = mapped_column(Text, default="")
+
+    book: Mapped["Book"] = relationship(back_populates="groups")
+
+
+class ReadingProgress(Base):
+    __tablename__ = "reading_progress"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    # 一本书只保留一条阅读进度；unique 自带索引，无需再 index=True
+    book_id: Mapped[int] = mapped_column(ForeignKey("book.id"), unique=True)
+    chapter_id: Mapped[int] = mapped_column(ForeignKey("book_chapter.id"))
+    group_idx: Mapped[int] = mapped_column(Integer, default=0)
+    study_seconds: Mapped[int] = mapped_column(Integer, default=0)
+    updated_at: Mapped[datetime] = mapped_column(default=datetime.utcnow, onupdate=datetime.utcnow)

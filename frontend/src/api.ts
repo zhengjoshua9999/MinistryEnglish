@@ -59,8 +59,10 @@ export type StatsGranularity = 'day' | 'week' | 'month'
 export interface VocabWord {
   id: number
   word: string
-  media_id: number
-  sentence_id: number
+  media_id: number | null
+  sentence_id: number | null
+  source_type: 'media' | 'book'
+  book_paragraph_id: number | null
   context_text: string
   definition: string
   translation: string
@@ -70,6 +72,72 @@ export interface VocabWord {
   uk_audio_path: string
   status: 'new' | 'reviewing' | 'mastered'
   created_at: string
+}
+
+export interface Book {
+  id: number
+  title: string
+  english_original_name: string
+  chinese_original_name: string
+  status: 'processing' | 'review' | 'published' | 'error'
+  error_message: string
+  created_at: string
+}
+
+export interface BookParagraph {
+  id: number
+  chapter_id: number
+  language: 'en' | 'zh'
+  idx: number
+  text: string
+  kind: string
+}
+
+export interface BookChapter {
+  id: number
+  book_id: number
+  idx: number
+  title: string
+  paragraphs: BookParagraph[]
+}
+
+export interface ReadingGroup {
+  id: number
+  book_id: number
+  chapter_id: number
+  idx: number
+  english_ids: number[]
+  chinese_ids: number[]
+  alignment_type: string
+  confidence: number
+  status: 'pending_review' | 'confirmed'
+  note: string
+}
+
+export interface ReadingDetail {
+  book: Book
+  chapters: BookChapter[]
+  groups: ReadingGroup[]
+  progress: { chapter_id: number; group_idx: number } | null
+}
+
+export interface BookChapterSummary {
+  id: number
+  book_id: number
+  idx: number
+  title: string
+}
+
+export interface ReadingDirectory {
+  book: Book
+  chapters: BookChapterSummary[]
+  progress: { chapter_id: number; group_idx: number } | null
+}
+
+export interface ChapterContent {
+  chapter: BookChapterSummary
+  paragraphs: BookParagraph[]
+  groups: ReadingGroup[]
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
@@ -144,6 +212,12 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ word, sentence_id: sentenceId }),
     }),
+  markBookWord: (word: string, paragraphId: number, contextText?: string) =>
+    request<VocabWord>('/api/vocab', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ word, book_paragraph_id: paragraphId, context_text: contextText }),
+    }),
   updateVocabStatus: (id: number, status: string) =>
     request<VocabWord>(`/api/vocab/${id}/status`, {
       method: 'PATCH',
@@ -166,6 +240,38 @@ export const api = {
     const blob = new Blob([JSON.stringify({ seconds })], { type: 'application/json' })
     navigator.sendBeacon('/api/stats/study-time', blob)
   },
+
+  listBooks: () => request<Book[]>('/api/books'),
+  deleteBook: (id: number) => request(`/api/books/${id}`, { method: 'DELETE' }),
+  uploadBook: (englishFile: File, chineseFile: File) => {
+    const form = new FormData()
+    form.append('english_file', englishFile)
+    form.append('chinese_file', chineseFile)
+    return request<Book>('/api/books/upload', { method: 'POST', body: form })
+  },
+  getBookReview: (id: number) => request<ReadingDetail>(`/api/books/${id}/review`),
+  getBookReading: (id: number) => request<ReadingDirectory>(`/api/books/${id}/reading`),
+  getBookChapter: (id: number, chapterId: number) =>
+    request<ChapterContent>(`/api/books/${id}/chapters/${chapterId}`),
+  updateReadingGroup: (id: number, englishIds: number[], chineseIds: number[], status?: string) =>
+    request<ReadingGroup>(`/api/reading-groups/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ english_ids: englishIds, chinese_ids: chineseIds, status }),
+    }),
+  updateBookParagraph: (id: number, text: string, kind?: string) =>
+    request<BookParagraph>(`/api/book-paragraphs/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, kind }),
+    }),
+  publishBook: (id: number) => request<Book>(`/api/books/${id}/publish`, { method: 'POST' }),
+  saveReadingProgress: (id: number, chapterId: number, groupIdx: number, studySeconds = 0) =>
+    request(`/api/books/${id}/progress`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chapter_id: chapterId, group_idx: groupIdx, study_seconds: studySeconds }),
+    }),
 }
 
 export function mediaFileUrl(m: MediaFile): string {

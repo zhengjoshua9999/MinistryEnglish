@@ -5,3 +5,13 @@ frontend/node_modules/
 frontend/dist/
 .DS_Store
 .claude/settings.local.json
+
+# 桌面打包产物
+desktop/build-resources/
+desktop/release/
+desktop/node_modules/
+desktop/.npm-cache/
+desktop/.cache/
+
+# 数据库/媒体备份（体积大，不进仓库）
+backups/

@@ -44,6 +44,11 @@
   padding: 48px 40px 96px;
 }
 
+/* 阅读页两栏并排需要更宽，单独放宽；其余页面维持 880px */
+.content:has(.reading-page) {
+  max-width: 1280px;
+}
+
 @media (max-width: 640px) {
   .topbar {
     padding: 16px 20px;

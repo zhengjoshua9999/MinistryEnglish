@@ -1,0 +1,77 @@
+name: Build macOS DMG (Intel + Apple Silicon)
+
+# 手动触发（只上传工件），或打 tag 时自动触发（除工件外，还会发布 GitHub Release）。
+# 产出两个 .dmg：
+#   1) Intel (x86_64)  — macos-13 runner
+#   2) Apple 芯片 (arm64) — macos-14 runner
+# 原生 Python 扩展无法跨架构交叉编译，因此必须在各自架构上构建。
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build:
+    name: Build dmg (${{ matrix.arch }})
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-13   # Intel
+            arch: x64
+          - runner: macos-14   # Apple Silicon (M1/M2/M3/M4)
+            arch: arm64
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Build DMG
+        shell: bash
+        run: bash desktop/build.sh
+        env:
+          # electron-builder 在当前架构上构建；build.sh 用 uname -m 决定目标架构。
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"
+
+      - name: Upload DMG artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ZhishiYingyu-dmg-${{ matrix.arch }}
+          path: desktop/release/**/*.dmg
+          if-no-files-found: error
+
+  # 打 tag（v*）时，把两个 dmg 汇总成一个 GitHub Release，方便从 GitHub 下载安装。
+  release:
+    name: Publish Release
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download all DMG artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: ZhishiYingyu-dmg-*
+          path: dist
+          merge-multiple: true
+
+      - name: List downloaded artifacts
+        run: ls -lh dist/
+
+      - name: Attach DMGs to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: 职事英语 ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          files: dist/*.dmg
