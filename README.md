@@ -4,12 +4,8 @@
 
 ## 目录结构
 
-- `backend/` — FastAPI 服务，负责上传、Whisper 转写、断句、生词本、发音评分和双语阅读材料
-- `frontend/` — Vite + React 前端，上传页 / 跟读练习页 / 生词本页 / 阅读中心
-
-## 阅读模块设计
-
-双语职事书报阅读模块的设计方案见 [`docs/reading-module-design.md`](docs/reading-module-design.md)。方案包括英文 PDF / 中文 EPUB·DOCX 上传、语义相似度辅助的自动段落对齐、人工校对、双栏同步滚动阅读以及与生词本的联动（不涉及跟读评分）。
+- `backend/` — FastAPI 服务，负责上传、Whisper 转写、断句、生词本、发音评分
+- `frontend/` — Vite + React 前端，上传页 / 跟读练习页 / 生词本页
 
 ## 启动后端
 
@@ -23,11 +19,6 @@ uvicorn app.main:app --reload --port 8000
 ```
 
 首次转写会自动从 Hugging Face 下载 Whisper 模型（默认 `small`，可在 `.env` 里改 `WHISPER_MODEL`），需要联网，之后离线可用。
-
-阅读中心首次上传书籍时，会从 Hugging Face 下载本地多语言句向量模型（默认
-`paraphrase-multilingual-mpnet-base-v2`，可用 `READING_EMBEDDING_MODEL` 修改），用于辅助中英文段落对齐；下载完成后可离线使用。
-
-阅读中心只接受有文本层的英文 PDF，以及 EPUB 或 DOCX 中文文件。上传后所有自动对齐结果都必须人工确认，发布后才能进入双栏阅读页。
 
 ## 启动前端
 
@@ -50,7 +41,7 @@ npm run dev
 - 从 GitHub 安装（仓库是私有的，需带登录态）：打 tag 后会自动发布 Release，
   然后 `bash scripts/install-macos.sh`（或在新机器上用 `gh` 取脚本，见 `desktop/README.md`）
 - 安装包较小：首次运行才用内置 `uv` 联网建 Python 环境、安装依赖并下载 Whisper 模型；
-  数据（数据库、媒体、录音、生词、阅读书籍）存在 `~/Library/Application Support/职事英语/`
+  数据（数据库、媒体、录音、生词）存在 `~/Library/Application Support/职事英语/`
 
 详细说明见 [desktop/README.md](desktop/README.md)。
 

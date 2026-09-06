@@ -5,14 +5,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 
 from app import config
-from app.database import Base, SessionLocal, engine, migrate_reading_progress, migrate_schema
+from app.database import Base, SessionLocal, engine
 from app.models import GlossaryTerm
-from app.routers import categories, glossary, media, practice, reading, sentences, stats, vocab
+from app.routers import categories, glossary, media, practice, sentences, stats, vocab
 from app.services.range_file import serve_file_range
 
 Base.metadata.create_all(bind=engine)
-migrate_schema()
-migrate_reading_progress()
 
 DEFAULT_GLOSSARY = [
     ("Watchman Nee", "人名"),
@@ -69,7 +67,6 @@ app.include_router(practice.router, prefix="/api")
 app.include_router(vocab.router, prefix="/api")
 app.include_router(glossary.router, prefix="/api")
 app.include_router(stats.router, prefix="/api")
-app.include_router(reading.router, prefix="/api")
 
 
 @app.get("/api/health")

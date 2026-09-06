@@ -72,7 +72,6 @@ class PracticeAttemptOut(BaseModel):
 class VocabWordCreate(BaseModel):
     word: str
     sentence_id: Optional[int] = None
-    book_paragraph_id: Optional[int] = None
     context_text: Optional[str] = None
 
 
@@ -84,7 +83,6 @@ class VocabWordOut(BaseModel):
     media_id: Optional[int] = None
     sentence_id: Optional[int] = None
     source_type: str
-    book_paragraph_id: Optional[int] = None
     context_text: str
     definition: str
     translation: str
@@ -124,99 +122,3 @@ class DailyActivityOut(BaseModel):
     dictation_count: int
     shadow_count: int
     new_word_count: int
-
-
-class BookOut(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
-    id: int
-    title: str
-    english_original_name: str
-    chinese_original_name: str
-    status: str
-    error_message: str
-    created_at: datetime
-
-
-class BookParagraphOut(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
-    id: int
-    chapter_id: int
-    language: str
-    idx: int
-    text: str
-    kind: str
-
-
-class BookChapterOut(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
-    id: int
-    book_id: int
-    idx: int
-    title: str
-    paragraphs: list[BookParagraphOut] = Field(default_factory=list)
-
-
-class ReadingGroupOut(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
-    id: int
-    book_id: int
-    chapter_id: int
-    idx: int
-    english_ids: list[int] = Field(default_factory=list)
-    chinese_ids: list[int] = Field(default_factory=list)
-    alignment_type: str
-    confidence: float
-    status: str
-    note: str
-
-
-class ReadingDetailOut(BaseModel):
-    book: BookOut
-    chapters: list[BookChapterOut]
-    groups: list[ReadingGroupOut]
-    progress: Optional[dict] = None
-
-
-class BookChapterSummary(BaseModel):
-    """章节目录里的轻量章节，不含段落，避免一次把整本书段落都拉下来。"""
-
-    model_config = ConfigDict(from_attributes=True)
-
-    id: int
-    book_id: int
-    idx: int
-    title: str
-
-
-class ReadingDirectoryOut(BaseModel):
-    book: BookOut
-    chapters: list[BookChapterSummary]
-    progress: Optional[dict] = None
-
-
-class ChapterContentOut(BaseModel):
-    chapter: BookChapterSummary
-    paragraphs: list[BookParagraphOut]
-    groups: list[ReadingGroupOut]
-
-
-class ReadingGroupUpdate(BaseModel):
-    english_ids: list[int] = Field(default_factory=list)
-    chinese_ids: list[int] = Field(default_factory=list)
-    status: Optional[str] = None
-    note: Optional[str] = None
-
-
-class BookParagraphUpdate(BaseModel):
-    text: str = Field(min_length=1)
-    kind: Optional[str] = None
-
-
-class ReadingProgressIn(BaseModel):
-    chapter_id: int
-    group_idx: int = Field(ge=0)
-    study_seconds: int = Field(default=0, ge=0)

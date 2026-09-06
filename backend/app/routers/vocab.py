@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 
 from app import config
 from app.database import get_db
-from app.models import BookParagraph, MediaFile, Sentence, VocabWord
+from app.models import MediaFile, Sentence, VocabWord
 from app.schemas import VocabStatusUpdate, VocabWordCreate, VocabWordOut
 from app.services import audio_utils, deepseek_service, stats_service
 from app.services.azure_service import synthesize_uk, synthesize_us
@@ -59,50 +59,39 @@ def _ensure_standard_audio(word: str) -> tuple[str, str]:
 def mark_word(payload: VocabWordCreate, db: Session = Depends(get_db)):
     word_norm = payload.word.strip().lower()
 
-    if not payload.sentence_id and not payload.book_paragraph_id:
-        raise HTTPException(400, "需要提供音频句子或书籍段落")
+    if not payload.sentence_id:
+        raise HTTPException(400, "需要提供音频句子")
 
     existing = db.query(VocabWord).filter(VocabWord.word_norm == word_norm).first()
     if existing:
         return existing
 
     source_type = "media"
-    media = None
-    sentence = None
-    paragraph = None
+    sentence = db.get(Sentence, payload.sentence_id)
+    if not sentence:
+        raise HTTPException(404, "找不到该句子")
+    media = db.get(MediaFile, sentence.media_id)
+    context_text = payload.context_text or sentence.text_polished or sentence.text_raw
     context_audio_name = ""
-    if payload.book_paragraph_id:
-        paragraph = db.get(BookParagraph, payload.book_paragraph_id)
-        if not paragraph:
-            raise HTTPException(404, "找不到该书籍段落")
-        source_type = "book"
-        context_text = payload.context_text or paragraph.text
-    else:
-        sentence = db.get(Sentence, payload.sentence_id)
-        if not sentence:
-            raise HTTPException(404, "找不到该句子")
-        media = db.get(MediaFile, sentence.media_id)
-        context_text = payload.context_text or sentence.text_polished or sentence.text_raw
-        try:
-            wav_path = _wav_path_for_media(media)
-            slug = _slug(payload.word)
-            clip_name = f"ctx-{sentence.id}-{slug}.wav"
-            clip_path = config.AUDIO_CLIPS_DIR / clip_name
-            audio_utils.clip_wav(wav_path, str(clip_path), sentence.start_ms, sentence.end_ms)
-            context_audio_name = clip_name
-        except Exception:
-            context_audio_name = ""
+    try:
+        wav_path = _wav_path_for_media(media)
+        slug = _slug(payload.word)
+        clip_name = f"ctx-{sentence.id}-{slug}.wav"
+        clip_path = config.AUDIO_CLIPS_DIR / clip_name
+        audio_utils.clip_wav(wav_path, str(clip_path), sentence.start_ms, sentence.end_ms)
+        context_audio_name = clip_name
+    except Exception:
+        context_audio_name = ""
 
     definition = deepseek_service.define_word(payload.word, context_text)
-    us_name, uk_name = ("", "") if source_type == "book" else _ensure_standard_audio(payload.word)
+    us_name, uk_name = _ensure_standard_audio(payload.word)
 
     vocab = VocabWord(
         word=payload.word,
         word_norm=word_norm,
-        media_id=sentence.media_id if sentence else None,
-        sentence_id=sentence.id if sentence else None,
+        media_id=media.id if media else None,
+        sentence_id=sentence.id,
         source_type=source_type,
-        book_paragraph_id=paragraph.id if paragraph else None,
         context_text=context_text,
         definition=definition["definition"],
         translation=definition["translation"],
