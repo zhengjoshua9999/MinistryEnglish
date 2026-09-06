@@ -142,7 +142,8 @@
   flex: 1;
   min-width: 0;
   font-size: 19px;
-  line-height: 1.7;
+  line-height: 1.75;
+  font-family: var(--serif);
 }
 
 .text-placeholder {

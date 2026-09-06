@@ -102,7 +102,7 @@
 
 .dropzone {
   margin-top: 24px;
-  border: 1.5px dashed var(--line);
+  border: 1.5px dashed var(--gold-soft);
   border-radius: 16px;
   padding: 64px 24px;
   display: flex;
@@ -110,6 +110,7 @@
   align-items: center;
   gap: 8px;
   cursor: pointer;
+  background: color-mix(in srgb, var(--surface) 75%, var(--bg));
   transition: border-color 0.15s, background 0.15s;
 }
 
@@ -120,8 +121,10 @@
 }
 
 .dropzone-title {
-  font-size: 17px;
+  font-size: 18px;
   font-weight: 600;
+  font-family: var(--serif);
+  color: var(--ink);
 }
 
 .dropzone-hint {
@@ -178,6 +181,8 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  font-family: var(--serif);
+  color: var(--ink);
 }
 
 .media-time {

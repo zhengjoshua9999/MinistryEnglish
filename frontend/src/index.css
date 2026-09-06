@@ -1,44 +1,54 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Noto+Serif:ital,wght@0,400;0,600;1,400&family=Noto+Serif+SC:wght@400;600;700&family=Open+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap');
+
+/* 职事英语 · 按 ministrybooks.org 的属灵书卷风格重设 */
 :root {
-  --bg: #fbfbfa;
-  --surface: #ffffff;
-  --ink: #1c201f;
-  --muted: #6b7570;
-  --line: #e4e7e5;
-  --accent: #1f6f6b;
-  --accent-ink: #ffffff;
-  --good: #2e8b57;
-  --warn: #c97c3d;
-  --bad: #c24b4b;
+  --bg: #f6efe3;            /* 羊皮纸米色 */
+  --surface: #fdfaf3;       /* 卡片/输入面 */
+  --surface-2: #efe6d2;     /* 次级面 */
+  --ink: #20261f;           /* 深绿黑 */
+  --muted: #6f6a55;         /* 橄榄灰 */
+  --line: #ddd2b8;          /* 棕褐分隔 */
+  --accent: #2c5530;        /* 森林绿 */
+  --accent-strong: #1e4422;
+  --accent-ink: #f4ecd8;    /* 奶油色（绿底上的字） */
+  --gold: #8b5a2b;          /* 金褐 */
+  --gold-soft: #c4a265;
+  --good: #2c8a25;
+  --warn: #b0722a;
+  --bad: #c0392f;
 
-  --series-1: #2a78d6;
-  --series-2: #eb6834;
-  --series-3: #1baf7a;
-  --series-4: #eda100;
+  --series-1: #2c5530;
+  --series-2: #8b5a2b;
+  --series-3: #b0722a;
+  --series-4: #4a6b2a;
 
-  --sans:
-    -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', Arial,
-    sans-serif;
+  --sans: 'Open Sans', -apple-system, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  --serif: 'Noto Serif', 'Noto Serif SC', 'Songti SC', serif;
+  --display: 'Cinzel', 'Noto Serif SC', serif;
 
   color-scheme: light dark;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #101413;
-    --surface: #161b1a;
-    --ink: #e9edeb;
-    --muted: #93a39c;
-    --line: #262f2d;
-    --accent: #4fbdb5;
-    --accent-ink: #06201e;
-    --good: #4caf7d;
-    --warn: #e0a868;
+    --bg: #10130c;
+    --surface: #171b12;
+    --surface-2: #1f241a;
+    --ink: #e8e4d2;
+    --muted: #a39d85;
+    --line: #33301f;
+    --accent: #4f8a4b;
+    --accent-strong: #66a263;
+    --accent-ink: #10130c;
+    --gold: #c4a265;
+    --gold-soft: #d8b877;
+    --good: #4caf50;
+    --warn: #d9a05a;
     --bad: #e0736c;
-
-    --series-1: #3987e5;
-    --series-2: #d95926;
-    --series-3: #199e70;
-    --series-4: #c98500;
+    --series-1: #4f8a4b;
+    --series-2: #c4a265;
+    --series-3: #d9a05a;
+    --series-4: #7aa05a;
   }
 }
 
@@ -75,8 +85,13 @@ h2,
 h3 {
   margin: 0;
   font-weight: 600;
-  letter-spacing: -0.01em;
+  letter-spacing: 0.01em;
   text-wrap: balance;
+  font-family: var(--serif);
+}
+
+h1 {
+  font-family: var(--display);
 }
 
 p {
