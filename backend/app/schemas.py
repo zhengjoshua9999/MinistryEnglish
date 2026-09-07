@@ -53,6 +53,15 @@ class SentenceUpdate(BaseModel):
     text_polished: str = Field(min_length=1, max_length=2000)
 
 
+class SentenceCorrection(BaseModel):
+    id: int
+    text: str
+
+
+class SentenceCorrections(BaseModel):
+    corrections: list[SentenceCorrection] = Field(default_factory=list)
+
+
 class PracticeAttemptOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

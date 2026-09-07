@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models import Sentence
-from app.schemas import SentenceOut, SentenceUpdate
+from app.schemas import SentenceCorrections, SentenceOut, SentenceUpdate
 
 router = APIRouter(tags=["sentences"])
 
@@ -27,3 +27,26 @@ def update_sentence(sentence_id: int, payload: SentenceUpdate, db: Session = Dep
     db.commit()
     db.refresh(s)
     return s
+
+
+@router.post("/sentences/correct", response_model=list[SentenceOut])
+def correct_sentences(payload: SentenceCorrections, db: Session = Depends(get_db)):
+    """批量修正 ASR 识别错的字幕：一次提交多条 {id, text}，统一写入 text_polished。
+    供外部脚本 / 后续 AI 校对流程使用；text_raw 仍保留 Whisper 原始输出。"""
+    if not payload.corrections:
+        return []
+    out: list[Sentence] = []
+    seen: set[int] = set()
+    for c in payload.corrections:
+        if c.id in seen:
+            continue
+        seen.add(c.id)
+        s = db.get(Sentence, c.id)
+        if not s:
+            raise HTTPException(404, f"找不到句子 {c.id}")
+        s.text_polished = c.text.strip()
+        out.append(s)
+    db.commit()
+    for s in out:
+        db.refresh(s)
+    return out
