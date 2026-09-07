@@ -107,6 +107,45 @@ class VocabStatusUpdate(BaseModel):
     status: str
 
 
+class StudyCardOut(BaseModel):
+    id: int
+    word: str
+    pos: str = ""
+    definition: str = ""
+    translation: str = ""
+    context_text: str = ""
+    context_audio_path: str = ""
+    us_audio_path: str = ""
+    uk_audio_path: str = ""
+    status: str = "new"
+    weak: bool = False
+    weak_count: int = 0
+    interval_days: float = 0.0
+    due_at: Optional[str] = None
+
+
+class StudySummaryOut(BaseModel):
+    new: int
+    due: int
+    reviewing: int
+    mastered: int
+    total: int
+
+
+class ReviewIn(BaseModel):
+    rating: str  # again|hard|good|easy
+
+
+class ReviewResultOut(BaseModel):
+    id: int
+    status: str
+    reps: int
+    lapses: int
+    ease: float
+    interval_days: float
+    due_at: Optional[str] = None
+
+
 class GlossaryTermIn(BaseModel):
     term: str
     note: str = ""

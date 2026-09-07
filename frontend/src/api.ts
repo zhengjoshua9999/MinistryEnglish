@@ -73,6 +73,31 @@ export interface VocabWord {
   created_at: string
 }
 
+export interface StudyCard {
+  id: number
+  word: string
+  pos: string
+  definition: string
+  translation: string
+  context_text: string
+  context_audio_path: string
+  us_audio_path: string
+  uk_audio_path: string
+  status: string
+  weak: boolean
+  weak_count: number
+  interval_days: number
+  due_at: string | null
+}
+
+export interface StudySummary {
+  new: number
+  due: number
+  reviewing: number
+  mastered: number
+  total: number
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(path, init)
   if (!res.ok) {
@@ -139,6 +164,14 @@ export const api = {
 
   listVocab: (status?: string) =>
     request<VocabWord[]>(`/api/vocab${status ? `?status=${status}` : ''}`),
+  studySummary: () => request<StudySummary>('/api/vocab/study/summary'),
+  studyQueue: (kind: string, limit = 20) =>
+    request<StudyCard[]>(`/api/vocab/study/queue?kind=${kind}&limit=${limit}`),
+  reviewWord: (id: number, rating: string) =>
+    request<{ id: number; status: string; reps: number; lapses: number; ease: number; interval_days: number; due_at: string | null }>(
+      `/api/vocab/${id}/review`,
+      { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ rating }) }
+    ),
   markWord: (word: string, sentenceId: number) =>
     request<VocabWord>('/api/vocab', {
       method: 'POST',

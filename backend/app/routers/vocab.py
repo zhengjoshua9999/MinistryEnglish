@@ -1,18 +1,28 @@
 from __future__ import annotations
 
 import re
+from datetime import datetime
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import PlainTextResponse
+from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app import config
 from app.database import get_db
-from app.models import MediaFile, Sentence, VocabWord
-from app.schemas import VocabStatusUpdate, VocabWordCreate, VocabWordOut
-from app.services import audio_utils, deepseek_service, stats_service
+from app.models import MediaFile, Sentence, VocabWord, WeakWordCount
+from app.schemas import (
+    ReviewIn,
+    ReviewResultOut,
+    StudyCardOut,
+    StudySummaryOut,
+    VocabStatusUpdate,
+    VocabWordCreate,
+    VocabWordOut,
+)
+from app.services import audio_utils, deepseek_service, srs, stats_service
 from app.services.azure_service import synthesize_uk, synthesize_us
 
 router = APIRouter(tags=["vocab"])
@@ -169,3 +179,65 @@ def export_anki(db: Session = Depends(get_db)):
         row = "\t".join([v.word, meaning, example, sound_tags])
         lines.append(row)
     return PlainTextResponse("\n".join(lines), media_type="text/plain")
+
+
+# ---------- 学习 / 复习（间隔重复 SM-2） ----------
+
+
+@router.get("/vocab/study/summary", response_model=StudySummaryOut)
+def study_summary(db: Session = Depends(get_db)):
+    counts = dict(db.query(VocabWord.status, func.count(VocabWord.id)).group_by(VocabWord.status).all())
+    now = datetime.utcnow()
+    due = (
+        db.query(VocabWord)
+        .filter(VocabWord.last_reviewed_at.isnot(None), VocabWord.due_at <= now)
+        .count()
+    )
+    return StudySummaryOut(
+        new=counts.get("new", 0),
+        due=due,
+        reviewing=counts.get("reviewing", 0),
+        mastered=counts.get("mastered", 0),
+        total=db.query(VocabWord).count(),
+    )
+
+
+@router.get("/vocab/study/queue", response_model=list[StudyCardOut])
+def study_queue(kind: str = "due", limit: int = 20, db: Session = Depends(get_db)):
+    """学习/复习队列：kind=new 未学过的；kind=due 已到期（复习）。跟读读不准的词（WeakWordCount>0）排最前。"""
+    now = datetime.utcnow()
+    q = (
+        db.query(VocabWord, func.coalesce(WeakWordCount.count, 0).label("wc"))
+        .outerjoin(WeakWordCount, VocabWord.word_norm == WeakWordCount.word_norm)
+    )
+    if kind == "new":
+        q = q.filter(VocabWord.last_reviewed_at.is_(None))
+    else:
+        q = q.filter(VocabWord.last_reviewed_at.isnot(None), VocabWord.due_at <= now)
+    rows = (
+        q.order_by(func.coalesce(WeakWordCount.count, 0).desc(), VocabWord.due_at.asc())
+        .limit(max(1, min(limit, 200)))
+        .all()
+    )
+    return [srs.derive_card(w, wc) for w, wc in rows]
+
+
+@router.post("/vocab/{vocab_id}/review", response_model=ReviewResultOut)
+def review_word(vocab_id: int, payload: ReviewIn, db: Session = Depends(get_db)):
+    v = db.get(VocabWord, vocab_id)
+    if not v:
+        raise HTTPException(404, "找不到该生词")
+    if payload.rating not in srs.RATINGS:
+        raise HTTPException(400, f"无效评分：{payload.rating}")
+    srs.apply_review(v, payload.rating)
+    db.commit()
+    db.refresh(v)
+    return ReviewResultOut(
+        id=v.id,
+        status=v.status,
+        reps=v.reps,
+        lapses=v.lapses,
+        ease=v.ease,
+        interval_days=v.interval_days,
+        due_at=v.due_at.isoformat() if v.due_at else None,
+    )

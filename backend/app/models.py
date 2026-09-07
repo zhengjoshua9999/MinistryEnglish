@@ -114,4 +114,11 @@ class VocabWord(Base):
     us_audio_path: Mapped[str] = mapped_column(String, default="")
     uk_audio_path: Mapped[str] = mapped_column(String, default="")
     status: Mapped[str] = mapped_column(String, default="new")  # new/reviewing/mastered
+    # 间隔重复（SM-2）排程字段：复习时更新，用于驱动"学习/复习"队列。
+    reps: Mapped[int] = mapped_column(Integer, default=0)
+    lapses: Mapped[int] = mapped_column(Integer, default=0)
+    ease: Mapped[float] = mapped_column(Float, default=2.5)
+    interval_days: Mapped[float] = mapped_column(Float, default=0.0)
+    due_at: Mapped[Optional[datetime]] = mapped_column(default=datetime.utcnow)
+    last_reviewed_at: Mapped[Optional[datetime]] = mapped_column(default=None)
     created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)

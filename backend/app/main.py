@@ -5,12 +5,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 
 from app import config
-from app.database import Base, SessionLocal, engine
+from app.database import Base, SessionLocal, engine, migrate_vocab_schedule
 from app.models import GlossaryTerm
 from app.routers import categories, glossary, media, practice, sentences, stats, vocab
 from app.services.range_file import serve_file_range
 
 Base.metadata.create_all(bind=engine)
+migrate_vocab_schedule()
 
 DEFAULT_GLOSSARY = [
     ("Watchman Nee", "人名"),
