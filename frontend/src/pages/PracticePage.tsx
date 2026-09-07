@@ -51,6 +51,8 @@ export default function PracticePage() {
   const [dictationText, setDictationText] = useState<Record<number, string>>({})
   const [dictationLogged, setDictationLogged] = useState<Set<number>>(new Set())
   const [isPlaying, setIsPlaying] = useState(false)
+  const [durationMs, setDurationMs] = useState(0)
+  const [muted, setMuted] = useState(false)
   const [editingId, setEditingId] = useState<number | null>(null)
   const [editDraft, setEditDraft] = useState('')
 
@@ -208,6 +210,30 @@ export default function PracticePage() {
 
   const currentSentence = sentences.find((s) => currentMs >= s.start_ms && currentMs < s.end_ms)
 
+  const fmtTime = (ms: number) => {
+    const t = Math.max(0, Math.floor(ms / 1000))
+    const h = Math.floor(t / 3600)
+    const m = Math.floor((t % 3600) / 60)
+    const s = t % 60
+    return h > 0 ? `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}` : `${m}:${String(s).padStart(2, '0')}`
+  }
+  const seekTo = (ms: number) => {
+    const a = audioRef.current
+    if (a) a.currentTime = ms / 1000
+  }
+  const togglePlay = () => {
+    const a = audioRef.current
+    if (!a) return
+    if (a.paused) a.play()
+    else a.pause()
+  }
+  const toggleMute = () => {
+    const a = audioRef.current
+    if (!a) return
+    a.muted = !a.muted
+    setMuted(a.muted)
+  }
+
   const startRecording = async () => {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
     const recorder = new MediaRecorder(stream)
@@ -332,19 +358,38 @@ export default function PracticePage() {
       <audio
         ref={audioRef}
         src={mediaFileUrl(media)}
-        controls
         onTimeUpdate={onTimeUpdate}
         onPlay={onAudioPlay}
         onPause={onAudioPause}
         onEnded={onAudioPause}
         onLoadedMetadata={() => {
+          if (audioRef.current) setDurationMs(audioRef.current.duration * 1000 || 0)
           if (pendingPlaybackTimeRef.current !== null && audioRef.current) {
             audioRef.current.currentTime = pendingPlaybackTimeRef.current
             pendingPlaybackTimeRef.current = null
           }
         }}
-        className="player"
       />
+
+      <div className="audio-player">
+        <button className="player-play" onClick={togglePlay} aria-label={isPlaying ? '暂停' : '播放'}>
+          {isPlaying ? '⏸' : '▶'}
+        </button>
+        <span className="player-time">
+          {fmtTime(currentMs)} / {fmtTime(durationMs || media.duration_sec * 1000)}
+        </span>
+        <input
+          className="player-seek"
+          type="range"
+          min={0}
+          max={durationMs || media.duration_sec * 1000 || 1}
+          value={currentMs}
+          onChange={(e) => seekTo(Number(e.target.value))}
+        />
+        <button className="player-mute" onClick={toggleMute} aria-label={muted ? '取消静音' : '静音'}>
+          {muted ? '🔇' : '🔊'}
+        </button>
+      </div>
 
       <div className="toolbar">
         <div className="speed-group">
