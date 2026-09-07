@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { api, audioClipUrl, type VocabWord } from '../api'
+import { api, audioClipUrl, type StudySummary, type VocabWord } from '../api'
+import ReviewPage from './ReviewPage'
 import './VocabPage.css'
 
 const STATUS_LABEL: Record<VocabWord['status'], string> = {
@@ -11,6 +12,9 @@ const STATUS_LABEL: Record<VocabWord['status'], string> = {
 export default function VocabPage() {
   const [words, setWords] = useState<VocabWord[]>([])
   const [filter, setFilter] = useState<string>('')
+  const [summary, setSummary] = useState<StudySummary | null>(null)
+  const [view, setView] = useState<'browse' | 'review'>('browse')
+  const [reviewKind, setReviewKind] = useState<'new' | 'due'>('due')
   // 全页共享一个音频实例：不管连点同一个发音按钮，还是在原声/美式/英式之间来回点，
   // 任何时刻最多一路声音在响，后点的直接打断前一个，不会叠在一起播。
   const playerRef = useRef<HTMLAudioElement | null>(null)
@@ -24,12 +28,27 @@ export default function VocabPage() {
     player.play().catch(() => {})
   }
 
-  const refresh = () => api.listVocab(filter || undefined).then(setWords)
+  const refresh = () => {
+    api.listVocab(filter || undefined).then(setWords)
+    api.studySummary().then(setSummary)
+  }
 
   useEffect(() => {
     refresh()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filter])
+
+  if (view === 'review') {
+    return (
+      <ReviewPage
+        initialMode={reviewKind}
+        onExit={() => {
+          setView('browse')
+          refresh()
+        }}
+      />
+    )
+  }
 
   const cycleStatus = async (w: VocabWord) => {
     const next: VocabWord['status'] = w.status === 'new' ? 'reviewing' : w.status === 'reviewing' ? 'mastered' : 'new'
@@ -50,6 +69,12 @@ export default function VocabPage() {
           <p className="lede">{words.length} 个生词</p>
         </div>
         <div className="vocab-actions">
+          <button className="review-launch" onClick={() => { setReviewKind('new'); setView('review') }}>
+            学习 ({summary?.new ?? 0})
+          </button>
+          <button className="review-launch" onClick={() => { setReviewKind('due'); setView('review') }}>
+            复习 ({summary?.due ?? 0})
+          </button>
           <select value={filter} onChange={(e) => setFilter(e.target.value)}>
             <option value="">全部</option>
             <option value="new">新标记</option>
@@ -66,7 +91,7 @@ export default function VocabPage() {
       </div>
 
       {words.length === 0 ? (
-        <p className="empty">还没有标记生词。在跟读练习页或双语阅读页双击单词即可加入这里。</p>
+        <p className="empty">还没有标记生词。在跟读练习页双击单词即可加入这里。</p>
       ) : (
         <div className="vocab-grid">
           {words.map((w) => (

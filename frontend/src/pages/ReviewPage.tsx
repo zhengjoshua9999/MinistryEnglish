@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
 import { api, audioClipUrl, type StudyCard } from '../api'
 import './ReviewPage.css'
 
@@ -10,9 +9,14 @@ const RATINGS = [
   { key: 'easy', label: '轻松', tone: 'rate-good2' },
 ] as const
 
-export default function ReviewPage() {
-  const [params, setParams] = useSearchParams()
-  const mode: 'new' | 'due' = params.get('mode') === 'new' ? 'new' : 'due'
+export default function ReviewPage({
+  initialMode = 'due',
+  onExit,
+}: {
+  initialMode?: 'new' | 'due'
+  onExit?: () => void
+}) {
+  const [mode, setMode] = useState<'new' | 'due'>(initialMode)
 
   const [cards, setCards] = useState<StudyCard[]>([])
   const [index, setIndex] = useState(0)
@@ -102,7 +106,7 @@ export default function ReviewPage() {
     return () => window.removeEventListener('keydown', onKey)
   }, [onKey])
 
-  const switchMode = (kind: 'new' | 'due') => setParams({ mode: kind })
+  const switchMode = (kind: 'new' | 'due') => setMode(kind)
 
   if (loading) {
     return (
@@ -116,13 +120,20 @@ export default function ReviewPage() {
     <div className="review-page">
       <div className="review-header">
         <h1>{mode === 'new' ? '学习新词' : '复习'}</h1>
-        <div className="review-modes">
-          <button className={mode === 'new' ? 'active' : ''} onClick={() => switchMode('new')}>
-            学习 ({counts.new})
-          </button>
-          <button className={mode === 'due' ? 'active' : ''} onClick={() => switchMode('due')}>
-            复习 ({counts.due})
-          </button>
+        <div className="review-actions">
+          {onExit && (
+            <button className="review-back" onClick={onExit}>
+              ← 返回词表
+            </button>
+          )}
+          <div className="review-modes">
+            <button className={mode === 'new' ? 'active' : ''} onClick={() => switchMode('new')}>
+              学习 ({counts.new})
+            </button>
+            <button className={mode === 'due' ? 'active' : ''} onClick={() => switchMode('due')}>
+              复习 ({counts.due})
+            </button>
+          </div>
         </div>
       </div>
 

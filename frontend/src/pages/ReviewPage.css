@@ -15,6 +15,27 @@
   font-size: 26px;
 }
 
+.review-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.review-back {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--muted);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.review-back:hover {
+  color: var(--ink);
+  border-color: var(--accent);
+}
+
 .review-modes {
   display: flex;
   gap: 8px;

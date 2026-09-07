@@ -3,7 +3,6 @@ import UploadPage from './pages/UploadPage'
 import PracticePage from './pages/PracticePage'
 import VocabPage from './pages/VocabPage'
 import StatsPage from './pages/StatsPage'
-import ReviewPage from './pages/ReviewPage'
 import './App.css'
 
 export default function App() {
@@ -25,9 +24,6 @@ export default function App() {
             <NavLink to="/vocab" className={({ isActive }) => (isActive ? 'active' : '')}>
               生词本
             </NavLink>
-            <NavLink to="/review" className={({ isActive }) => (isActive ? 'active' : '')}>
-              复习
-            </NavLink>
           </nav>
         </div>
       </header>
@@ -37,7 +33,6 @@ export default function App() {
           <Route path="/practice/:mediaId" element={<PracticePage />} />
           <Route path="/stats" element={<StatsPage />} />
           <Route path="/vocab" element={<VocabPage />} />
-          <Route path="/review" element={<ReviewPage />} />
         </Routes>
       </main>
     </div>
