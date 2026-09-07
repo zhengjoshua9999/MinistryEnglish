@@ -9,7 +9,10 @@ export default function App() {
   return (
     <div className="shell">
       <header className="topbar">
-        <span className="brand">职事英语</span>
+        <span className="brand">
+          <img className="brand-icon" src="/favicon.png" alt="" />
+          职事英语
+        </span>
         <nav className="topnav">
           <NavLink to="/" end className={({ isActive }) => (isActive ? 'active' : '')}>
             上传
