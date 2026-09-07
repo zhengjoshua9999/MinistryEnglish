@@ -9,15 +9,22 @@
   position: sticky;
   top: 0;
   z-index: 100;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
   width: 100%;
   padding: 15px 24px;
   background: var(--accent);
   color: #ffffff;
   box-shadow: 0 1px 0 color-mix(in srgb, var(--accent-strong) 35%, transparent);
+}
+
+/* 内层：与下方内容列同宽居中，品牌左 / 导航右对齐到两端 */
+.topbar-inner {
+  max-width: 900px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
 }
 
 .brand {

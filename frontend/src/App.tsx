@@ -9,21 +9,23 @@ export default function App() {
   return (
     <div className="shell">
       <header className="topbar">
-        <span className="brand">
-          <img className="brand-icon" src="/favicon.png" alt="" />
-          职事英语
-        </span>
-        <nav className="topnav">
-          <NavLink to="/" end className={({ isActive }) => (isActive ? 'active' : '')}>
-            上传
-          </NavLink>
-          <NavLink to="/stats" className={({ isActive }) => (isActive ? 'active' : '')}>
-            统计
-          </NavLink>
-          <NavLink to="/vocab" className={({ isActive }) => (isActive ? 'active' : '')}>
-            生词本
-          </NavLink>
-        </nav>
+        <div className="topbar-inner">
+          <span className="brand">
+            <img className="brand-icon" src="/favicon.png" alt="" />
+            职事英语
+          </span>
+          <nav className="topnav">
+            <NavLink to="/" end className={({ isActive }) => (isActive ? 'active' : '')}>
+              上传
+            </NavLink>
+            <NavLink to="/stats" className={({ isActive }) => (isActive ? 'active' : '')}>
+              统计
+            </NavLink>
+            <NavLink to="/vocab" className={({ isActive }) => (isActive ? 'active' : '')}>
+              生词本
+            </NavLink>
+          </nav>
+        </div>
       </header>
       <main className="content">
         <Routes>
