@@ -107,6 +107,7 @@ export default function ReviewPage({
   const [showSummary, setShowSummary] = useState(false)
   const [summaryWords, setSummaryWords] = useState<SessionWord[]>([])
   const [remain, setRemain] = useState(0)
+  const [showContext, setShowContext] = useState(false)
 
   const startSpelling = useCallback(async (sessionId: string, skipInteractive: boolean) => {
     const words = await api.getSessionWords(sessionId)
@@ -142,6 +143,7 @@ export default function ReviewPage({
     setAnswerCard(null)
     setQueuedSession(null)
     setPendingRating(null)
+    setShowContext(false)
     api.createStudySession(kind)
       .then((next) => {
         setSession(next)
@@ -178,8 +180,10 @@ export default function ReviewPage({
 
   useEffect(() => {
     if (!current || answerCard || !settings.autoplay_audio) return
-    play(preferredAudio(current, settings))
-  }, [current, answerCard, settings, play])
+    // 新词先放「原声例句」；复习词放首选单词发音。
+    const url = mode === 'new' && current.context_audio_path ? current.context_audio_path : preferredAudio(current, settings)
+    play(url)
+  }, [current, answerCard, settings, play, mode])
 
   const submitRating = useCallback(async (rating: Rating) => {
     if (!session || !current || submitting) return
@@ -249,6 +253,7 @@ export default function ReviewPage({
     setQueuedSession(null)
     setAnswerCard(null)
     setPendingRating(null)
+    setShowContext(false)
     recallStartedAt.current = Date.now()
   }, [queuedSession, submitting])
 
@@ -441,7 +446,18 @@ export default function ReviewPage({
 
               {!answerCard ? (
                 <>
-                  {contextPrompt && <p className="flashcard-prompt">{contextPrompt}</p>}
+                  {settings.show_context_during_recall && shownCard.context_text && (
+                    showContext ? (
+                      <button className="flashcard-toggle open" onClick={() => setShowContext(false)}>
+                        ▾ 收起原句
+                      </button>
+                    ) : (
+                      <button className="flashcard-toggle" onClick={() => setShowContext(true)}>
+                        ▸ 展开原句
+                      </button>
+                    )
+                  )}
+                  {showContext && contextPrompt && <p className="flashcard-prompt">{contextPrompt}</p>}
                   <p className="recall-hint">先在心里说出词义，再选择记忆程度</p>
                 </>
               ) : (

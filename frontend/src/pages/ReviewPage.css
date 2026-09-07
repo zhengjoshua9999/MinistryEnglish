@@ -114,9 +114,25 @@
 
 .flashcard-prompt {
   max-width: 610px;
-  margin-top: 72px;
+  margin-top: 48px;
   color: var(--ink);
   font: 20px/1.75 var(--serif);
+}
+
+.flashcard-toggle {
+  margin-top: 44px;
+  border: 1px dashed var(--line);
+  background: var(--surface);
+  color: var(--muted);
+  border-radius: 999px;
+  padding: 7px 16px;
+  font-size: 13.5px;
+  cursor: pointer;
+}
+
+.flashcard-toggle:hover {
+  color: var(--ink);
+  border-color: var(--accent);
 }
 
 .recall-hint {
