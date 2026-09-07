@@ -39,7 +39,9 @@
 
 .speed-group button.active {
   border-color: var(--accent);
-  color: var(--accent);
+  color: var(--accent-ink);
+  background: var(--btn-grad);
+  box-shadow: var(--btn-shadow);
 }
 
 .toolbar select {
@@ -122,9 +124,10 @@
 }
 
 .sentence-row.selected .sentence-play {
-  background: var(--accent);
+  background: var(--btn-grad);
   color: var(--accent-ink);
   border-color: var(--accent);
+  box-shadow: var(--btn-shadow);
 }
 
 .sentence-body {
@@ -220,8 +223,9 @@
 
 .edit-save {
   border: 1px solid var(--accent);
-  background: var(--accent);
+  background: var(--btn-grad);
   color: var(--accent-ink);
+  box-shadow: var(--btn-shadow);
 }
 
 .edit-cancel {
@@ -280,17 +284,19 @@
 
 .record-btn {
   border: 1px solid var(--accent);
-  background: var(--accent);
+  background: var(--btn-grad);
   color: var(--accent-ink);
-  border-radius: 8px;
+  border-radius: 10px;
   padding: 8px 16px;
   font-size: 13.5px;
   cursor: pointer;
+  box-shadow: var(--btn-shadow);
 }
 
 .record-btn.recording {
   background: var(--bad);
   border-color: var(--bad);
+  box-shadow: none;
 }
 
 .record-btn:disabled {

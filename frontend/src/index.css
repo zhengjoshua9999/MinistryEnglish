@@ -8,9 +8,11 @@
   --ink: #20261f;           /* 深绿黑 */
   --muted: #6f6a55;         /* 橄榄灰 */
   --line: #ddd2b8;          /* 棕褐分隔 */
-  --accent: #2c5530;        /* 森林绿 */
-  --accent-strong: #1e4422;
-  --accent-ink: #f4ecd8;    /* 奶油色（绿底上的字） */
+  --accent: #2e8a25;        /* 鲜绿（按钮/高亮） */
+  --accent-strong: #1e4422; /* 深森林绿（品牌） */
+  --accent-ink: #ffffff;    /* 绿底上的字 */
+  --btn-grad: linear-gradient(180deg, #3aa52f 0%, #2a7c1f 100%);
+  --btn-shadow: 0 1px 3px color-mix(in srgb, #163d10 30%, transparent);
   --gold: #8b5a2b;          /* 金褐 */
   --gold-soft: #c4a265;
   --good: #2c8a25;
@@ -37,9 +39,11 @@
     --ink: #e8e4d2;
     --muted: #a39d85;
     --line: #33301f;
-    --accent: #4f8a4b;
+    --accent: #43a047;
     --accent-strong: #66a263;
-    --accent-ink: #10130c;
+    --accent-ink: #0f140c;
+    --btn-grad: linear-gradient(180deg, #4caf50 0%, #2e7d32 100%);
+    --btn-shadow: 0 1px 3px rgb(0 0 0 / 40%);
     --gold: #c4a265;
     --gold-soft: #d8b877;
     --good: #4caf50;
