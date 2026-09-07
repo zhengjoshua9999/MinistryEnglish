@@ -23,6 +23,8 @@
   --series-2: #8b5a2b;
   --series-3: #b0722a;
   --series-4: #4a6b2a;
+  --series-5: #3d7f79;
+  --series-6: #8a4f78;
 
   --sans: 'Open Sans', -apple-system, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
   --serif: 'Noto Serif', 'Noto Serif SC', 'Songti SC', serif;
@@ -53,6 +55,8 @@
     --series-2: #c4a265;
     --series-3: #d9a05a;
     --series-4: #7aa05a;
+    --series-5: #61aaa3;
+    --series-6: #c27bac;
   }
 }
 

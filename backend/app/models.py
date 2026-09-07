@@ -95,6 +95,8 @@ class DailyActivity(Base):
     dictation_count: Mapped[int] = mapped_column(Integer, default=0)
     shadow_count: Mapped[int] = mapped_column(Integer, default=0)
     new_word_count: Mapped[int] = mapped_column(Integer, default=0)
+    vocab_learned_count: Mapped[int] = mapped_column(Integer, default=0)
+    vocab_review_count: Mapped[int] = mapped_column(Integer, default=0)
 
 
 class VocabWord(Base):
@@ -114,11 +116,59 @@ class VocabWord(Base):
     us_audio_path: Mapped[str] = mapped_column(String, default="")
     uk_audio_path: Mapped[str] = mapped_column(String, default="")
     status: Mapped[str] = mapped_column(String, default="new")  # new/reviewing/mastered
-    # 间隔重复（SM-2）排程字段：复习时更新，用于驱动"学习/复习"队列。
+    # 旧版试验字段继续保留，避免破坏已经升级过的本地数据库。正式排程以
+    # memory_stage / known_streak / due_at 为准。
     reps: Mapped[int] = mapped_column(Integer, default=0)
     lapses: Mapped[int] = mapped_column(Integer, default=0)
     ease: Mapped[float] = mapped_column(Float, default=2.5)
     interval_days: Mapped[float] = mapped_column(Float, default=0.0)
-    due_at: Mapped[Optional[datetime]] = mapped_column(default=datetime.utcnow)
+    memory_stage: Mapped[int] = mapped_column(Integer, default=0)
+    known_streak: Mapped[int] = mapped_column(Integer, default=0)
+    due_at: Mapped[Optional[datetime]] = mapped_column(default=None)
+    first_learned_at: Mapped[Optional[datetime]] = mapped_column(default=None)
     last_reviewed_at: Mapped[Optional[datetime]] = mapped_column(default=None)
+    last_rating: Mapped[Optional[str]] = mapped_column(String, default=None)
+    suspended_at: Mapped[Optional[datetime]] = mapped_column(default=None)
     created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
+
+
+class VocabReviewLog(Base):
+    __tablename__ = "vocab_review_log"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    vocab_id: Mapped[int] = mapped_column(ForeignKey("vocab_word.id"))
+    session_id: Mapped[str] = mapped_column(String)
+    mode: Mapped[str] = mapped_column(String)
+    rating: Mapped[str] = mapped_column(String)
+    stage_before: Mapped[int] = mapped_column(Integer)
+    stage_after: Mapped[int] = mapped_column(Integer)
+    due_before: Mapped[Optional[datetime]] = mapped_column(default=None)
+    due_after: Mapped[datetime] = mapped_column()
+    response_ms: Mapped[Optional[int]] = mapped_column(Integer, default=None)
+    reviewed_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
+
+
+class VocabStudySettings(Base):
+    __tablename__ = "vocab_study_settings"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, default=1)
+    new_group_size: Mapped[int] = mapped_column(Integer, default=5)
+    review_group_size: Mapped[int] = mapped_column(Integer, default=10)
+    daily_new_limit: Mapped[int] = mapped_column(Integer, default=20)
+    autoplay_audio: Mapped[bool] = mapped_column(default=True)
+    preferred_audio: Mapped[str] = mapped_column(String, default="us")
+    show_context_during_recall: Mapped[bool] = mapped_column(default=True)
+
+
+class VocabStudySession(Base):
+    __tablename__ = "vocab_study_session"
+
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    mode: Mapped[str] = mapped_column(String)
+    queue_json: Mapped[str] = mapped_column(Text, default="[]")
+    current_index: Mapped[int] = mapped_column(Integer, default=0)
+    initial_count: Mapped[int] = mapped_column(Integer, default=0)
+    rating_counts_json: Mapped[str] = mapped_column(Text, default='{"known": 0, "fuzzy": 0, "unknown": 0}')
+    created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(default=datetime.utcnow, onupdate=datetime.utcnow)
+    completed_at: Mapped[Optional[datetime]] = mapped_column(default=None)

@@ -1,14 +1,17 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { api, type DailyActivity, type StatsGranularity } from '../api'
+import { legacyStudyCounts } from '../legacyStudyStats'
 import './StatsChart.css'
 
-type SeriesKey = 'study_seconds' | 'dictation_count' | 'shadow_count' | 'new_word_count'
+type SeriesKey = 'study_seconds' | 'dictation_count' | 'shadow_count' | 'new_word_count' | 'vocab_learned_count' | 'vocab_review_count'
 
 const SERIES: { key: SeriesKey; label: string; unit: string; color: string; toValue: (r: DailyActivity) => number }[] = [
   { key: 'study_seconds', label: '学习分钟', unit: '分钟', color: 'var(--series-1)', toValue: (r) => Math.round(r.study_seconds / 60) },
   { key: 'dictation_count', label: '听写句数', unit: '句', color: 'var(--series-2)', toValue: (r) => r.dictation_count },
   { key: 'shadow_count', label: '复读句数', unit: '句', color: 'var(--series-3)', toValue: (r) => r.shadow_count },
   { key: 'new_word_count', label: '新增生词', unit: '个', color: 'var(--series-4)', toValue: (r) => r.new_word_count },
+  { key: 'vocab_learned_count', label: '首次学习', unit: '词', color: 'var(--series-5)', toValue: (r) => r.vocab_learned_count },
+  { key: 'vocab_review_count', label: '正式复习', unit: '词', color: 'var(--series-6)', toValue: (r) => r.vocab_review_count },
 ]
 const ALL_KEYS = SERIES.map((s) => s.key)
 
@@ -35,6 +38,10 @@ function yFor(fraction: number): number {
   return PAD.top + PLOT_H * (1 - clamped)
 }
 
+function count(value: unknown): number {
+  return typeof value === 'number' && Number.isFinite(value) ? value : 0
+}
+
 export default function StatsChart() {
   const [granularity, setGranularity] = useState<StatsGranularity>('day')
   const [rows, setRows] = useState<DailyActivity[]>([])
@@ -48,8 +55,24 @@ export default function StatsChart() {
     api.getStats(granularity).then(setRows)
   }, [granularity])
 
+  // 运行旧版后端时，响应没有两个新统计字段。浏览器端计数只在这种情况下补上，
+  // 升级后的后端已经有正式统计，不能重复相加。
+  const normalizedRows = useMemo(() => rows.map((row) => {
+    const hasVocabStats = Number.isFinite(row.vocab_learned_count) && Number.isFinite(row.vocab_review_count)
+    const legacy = hasVocabStats ? { learned: 0, reviewed: 0 } : legacyStudyCounts(row.period, granularity)
+    return {
+      ...row,
+      study_seconds: count(row.study_seconds),
+      dictation_count: count(row.dictation_count),
+      shadow_count: count(row.shadow_count),
+      new_word_count: count(row.new_word_count),
+      vocab_learned_count: count(row.vocab_learned_count) + legacy.learned,
+      vocab_review_count: count(row.vocab_review_count) + legacy.reviewed,
+    }
+  }), [rows, granularity])
+
   // API 返回新→旧；图表按时间正序读（左边过去，右边现在）
-  const chrono = useMemo(() => [...rows].reverse(), [rows])
+  const chrono = useMemo(() => [...normalizedRows].reverse(), [normalizedRows])
   const n = chrono.length
   const isolated = visible.size === 1 ? [...visible][0] : null
   const allZero = chrono.every((r) => SERIES.every((s) => s.toValue(r) === 0))
@@ -151,16 +174,20 @@ export default function StatsChart() {
                 <th>听写句数</th>
                 <th>复读句数</th>
                 <th>新增生词</th>
+                <th>首次学习</th>
+                <th>正式复习</th>
               </tr>
             </thead>
             <tbody>
-              {rows.map((r) => (
+              {normalizedRows.map((r) => (
                 <tr key={r.period}>
                   <td>{r.label}</td>
                   <td>{Math.round(r.study_seconds / 60)}</td>
                   <td>{r.dictation_count}</td>
                   <td>{r.shadow_count}</td>
                   <td>{r.new_word_count}</td>
+                  <td>{r.vocab_learned_count}</td>
+                  <td>{r.vocab_review_count}</td>
                 </tr>
               ))}
             </tbody>

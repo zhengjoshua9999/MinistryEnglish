@@ -52,6 +52,8 @@ export interface DailyActivity {
   dictation_count: number
   shadow_count: number
   new_word_count: number
+  vocab_learned_count: number
+  vocab_review_count: number
 }
 
 export type StatsGranularity = 'day' | 'week' | 'month'
@@ -84,18 +86,41 @@ export interface StudyCard {
   us_audio_path: string
   uk_audio_path: string
   status: string
-  weak: boolean
+  pronunciation_weak: boolean
   weak_count: number
+  memory_stage: number
   interval_days: number
   due_at: string | null
 }
 
 export interface StudySummary {
   new: number
+  available_new: number
   due: number
   reviewing: number
   mastered: number
   total: number
+  settings: StudySettings
+  active_session_id: string | null
+}
+
+export interface StudySettings {
+  new_group_size: number
+  review_group_size: number
+  daily_new_limit: number
+  autoplay_audio: boolean
+  preferred_audio: 'us' | 'uk' | 'context'
+  show_context_during_recall: boolean
+}
+
+export interface StudySession {
+  id: string
+  mode: 'new' | 'due'
+  current_card: StudyCard | null
+  current_number: number
+  total: number
+  completed: boolean
+  ratings: Record<'known' | 'fuzzy' | 'unknown', number>
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
@@ -165,13 +190,49 @@ export const api = {
   listVocab: (status?: string) =>
     request<VocabWord[]>(`/api/vocab${status ? `?status=${status}` : ''}`),
   studySummary: () => request<StudySummary>('/api/vocab/study/summary'),
-  studyQueue: (kind: string, limit = 20) =>
+  getStudySettings: () => request<StudySettings>('/api/vocab/study/settings'),
+  updateStudySettings: (settings: Partial<StudySettings>) =>
+    request<StudySettings>('/api/vocab/study/settings', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(settings),
+    }),
+  createStudySession: (mode: 'new' | 'due') =>
+    request<StudySession>('/api/vocab/study/sessions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mode }),
+    }),
+  legacyStudyQueue: (kind: 'new' | 'due', limit: number) =>
     request<StudyCard[]>(`/api/vocab/study/queue?kind=${kind}&limit=${limit}`),
-  reviewWord: (id: number, rating: string) =>
-    request<{ id: number; status: string; reps: number; lapses: number; ease: number; interval_days: number; due_at: string | null }>(
-      `/api/vocab/${id}/review`,
-      { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ rating }) }
-    ),
+  legacyReviewWord: (id: number, rating: 'again' | 'hard' | 'good') =>
+    request(`/api/vocab/${id}/review`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ rating }),
+    }),
+  getStudySession: (id: string) => request<StudySession>(`/api/vocab/study/sessions/${id}`),
+  getSessionWords: (id: string) =>
+    request<
+      {
+        word: string
+        pos: string
+        definition: string
+        translation: string
+        status?: string
+        memory_stage?: number
+        interval_days?: number
+        due_at?: string | null
+        lapses?: number
+        reps?: number
+      }[]
+    >(`/api/vocab/study/sessions/${id}/words`),
+  reviewSessionWord: (sessionId: string, vocabId: number, rating: 'known' | 'fuzzy' | 'unknown', responseMs?: number) =>
+    request<StudySession>(`/api/vocab/study/sessions/${sessionId}/reviews`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ vocab_id: vocabId, rating, response_ms: responseMs }),
+    }),
   markWord: (word: string, sentenceId: number) =>
     request<VocabWord>('/api/vocab', {
       method: 'POST',

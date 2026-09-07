@@ -18,3 +18,7 @@ backups/
 
 # 本地运行时的模型/缓存
 .hf_cache/
+
+# Python
+__pycache__/
+*.pyc

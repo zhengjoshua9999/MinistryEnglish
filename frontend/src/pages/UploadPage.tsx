@@ -48,6 +48,7 @@ export default function UploadPage() {
     if (activeCategory === 'none') return m.category_id === null
     return m.category_id === activeCategory
   })
+  const processingItems = visibleItems.filter((m) => m.status === 'uploaded' || m.status === 'transcribing')
 
   const doUpload = useCallback(
     async (file: File) => {
@@ -168,9 +169,9 @@ export default function UploadPage() {
         <span className="dropzone-hint">支持 mp3 / wav / m4a / mp4 / mov 等常见格式</span>
       </div>
 
-      {visibleItems.length > 0 && (
+      {processingItems.length > 0 && (
         <ul className="media-list">
-          {visibleItems.map((m) => (
+          {processingItems.map((m) => (
             <li key={m.id} className="media-row">
               <div className="media-row-top">
                 <button
@@ -212,7 +213,7 @@ export default function UploadPage() {
           ))}
         </ul>
       )}
-      {items.length > 0 && visibleItems.length === 0 && <p className="empty-filtered">这个分类下还没有信息。</p>}
+      {visibleItems.length > 0 && processingItems.length === 0 && <p className="empty-filtered">已处理的材料已收进学习中心。</p>}
     </div>
   )
 }

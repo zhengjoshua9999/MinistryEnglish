@@ -1,5 +1,7 @@
 import { NavLink, Route, Routes } from 'react-router-dom'
 import UploadPage from './pages/UploadPage'
+import StudyCenterPage from './pages/StudyCenterPage'
+import MaterialCollectionPage from './pages/MaterialCollectionPage'
 import PracticePage from './pages/PracticePage'
 import VocabPage from './pages/VocabPage'
 import StatsPage from './pages/StatsPage'
@@ -16,6 +18,9 @@ export default function App() {
           </span>
           <nav className="topnav">
             <NavLink to="/" end className={({ isActive }) => (isActive ? 'active' : '')}>
+              学习中心
+            </NavLink>
+            <NavLink to="/upload" className={({ isActive }) => (isActive ? 'active' : '')}>
               上传
             </NavLink>
             <NavLink to="/stats" className={({ isActive }) => (isActive ? 'active' : '')}>
@@ -29,7 +34,9 @@ export default function App() {
       </header>
       <main className="content">
         <Routes>
-          <Route path="/" element={<UploadPage />} />
+          <Route path="/" element={<StudyCenterPage />} />
+          <Route path="/upload" element={<UploadPage />} />
+          <Route path="/materials/:collectionId" element={<MaterialCollectionPage />} />
           <Route path="/practice/:mediaId" element={<PracticePage />} />
           <Route path="/stats" element={<StatsPage />} />
           <Route path="/vocab" element={<VocabPage />} />

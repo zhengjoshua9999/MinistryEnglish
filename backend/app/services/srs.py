@@ -1,39 +1,50 @@
 from datetime import datetime, timedelta
 from typing import Optional
 
-MASTERED_DAYS = 30.0
-MAX_INTERVAL_DAYS = 365.0
-RATINGS = ("again", "hard", "good", "easy")
+RATINGS = ("known", "fuzzy", "unknown")
+STAGE_INTERVALS = (
+    timedelta(minutes=10),
+    timedelta(days=1),
+    timedelta(days=3),
+    timedelta(days=7),
+    timedelta(days=15),
+    timedelta(days=30),
+    timedelta(days=60),
+    timedelta(days=120),
+)
 
 
 def apply_review(word, rating: str, now: Optional[datetime] = None) -> None:
-    """SM-2 简化版：按 Again/Hard/Good/Easy 更新 ease/interval/due_at，并推导 status。"""
-    now = now or datetime.utcnow()
-    prev = word.interval_days or 0.0
-
-    if rating == "again":
-        word.lapses += 1
-        word.reps = 0
-        word.ease = max(1.3, word.ease - 0.2)
-        word.interval_days = 1.0
-    elif rating == "hard":
-        word.reps += 1
-        word.ease = max(1.3, word.ease - 0.15)
-        word.interval_days = max(1.0, round(prev * 1.2, 1)) if prev else 1.0
-    elif rating == "good":
-        word.reps += 1
-        word.interval_days = round(prev * word.ease, 1) if prev else 1.0
-    elif rating == "easy":
-        word.reps += 1
-        word.ease += 0.15
-        word.interval_days = round(prev * word.ease * 1.3, 1) if prev else 1.0
-    else:
+    """按阶段间隔和三档自评更新排程；所有时间均为 naive UTC。"""
+    if rating not in RATINGS:
         raise ValueError(f"bad rating: {rating}")
+    now = now or datetime.utcnow()
+    stage = max(0, min(int(word.memory_stage or 0), len(STAGE_INTERVALS) - 1))
 
-    word.interval_days = min(word.interval_days, MAX_INTERVAL_DAYS)
+    if word.first_learned_at is None:
+        word.first_learned_at = now
+
+    if rating == "known":
+        stage = min(stage + 1, len(STAGE_INTERVALS) - 1)
+        word.known_streak = (word.known_streak or 0) + 1
+        interval = STAGE_INTERVALS[stage]
+    elif rating == "fuzzy":
+        word.known_streak = 0
+        base = STAGE_INTERVALS[stage]
+        interval = timedelta(minutes=10) if stage == 0 else max(timedelta(days=1), base / 2)
+    else:
+        word.lapses = (word.lapses or 0) + 1
+        word.known_streak = 0
+        stage = 0
+        interval = STAGE_INTERVALS[0]
+
+    word.memory_stage = stage
+    word.reps = (word.reps or 0) + 1
+    word.interval_days = interval.total_seconds() / 86400
     word.last_reviewed_at = now
-    word.due_at = now + timedelta(days=word.interval_days)
-    word.status = "mastered" if word.interval_days >= MASTERED_DAYS else "reviewing"
+    word.last_rating = rating
+    word.due_at = now + interval
+    word.status = "mastered" if stage >= 6 and word.known_streak >= 3 else "reviewing"
 
 
 def derive_card(word, weak_count: int = 0) -> dict:
@@ -48,8 +59,9 @@ def derive_card(word, weak_count: int = 0) -> dict:
         "us_audio_path": word.us_audio_path,
         "uk_audio_path": word.uk_audio_path,
         "status": word.status,
-        "weak": bool(weak_count and weak_count > 0),
+        "pronunciation_weak": bool(weak_count and weak_count > 0),
         "weak_count": weak_count or 0,
+        "memory_stage": word.memory_stage,
         "interval_days": word.interval_days,
         "due_at": word.due_at.isoformat() if word.due_at else None,
     }
