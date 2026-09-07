@@ -4,8 +4,11 @@
   flex-direction: column;
 }
 
-/* 顶部：通栏平铺的绿色块（不要按钮式圆角/投影） */
+/* 顶部：通栏平铺的绿色块（不要按钮式圆角/投影），吸顶固定 */
 .topbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -14,6 +17,7 @@
   padding: 15px 24px;
   background: var(--accent);
   color: #ffffff;
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--accent-strong) 35%, transparent);
 }
 
 .brand {
