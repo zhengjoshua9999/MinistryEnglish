@@ -4,19 +4,16 @@
   flex-direction: column;
 }
 
-/* 顶部：绿色圆角导航条（参考 ministrybooks 顶栏） */
+/* 顶部：通栏平铺的绿色块（不要按钮式圆角/投影） */
 .topbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
   width: 100%;
-  max-width: 900px;
-  margin: 24px auto 0;
-  padding: 16px 26px;
-  background: var(--btn-grad);
-  border-radius: 16px;
-  box-shadow: var(--btn-shadow);
+  padding: 15px 32px;
+  background: var(--accent);
+  color: #ffffff;
 }
 
 .brand {
@@ -39,7 +36,7 @@
   font-family: var(--sans);
   font-weight: 500;
   color: rgba(255, 255, 255, 0.85);
-  padding: 6px 2px;
+  padding: 4px 2px;
   border-bottom: 2.5px solid transparent;
   transition: color 0.15s, border-color 0.15s;
 }
@@ -64,7 +61,7 @@
 
 @media (max-width: 640px) {
   .topbar {
-    padding: 12px 18px;
+    padding: 12px 20px;
     gap: 12px;
   }
   .topnav {
