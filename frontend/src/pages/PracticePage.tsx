@@ -350,6 +350,9 @@ export default function PracticePage() {
 
   if (!media) return <p className="loading">加载中…</p>
 
+  const totalMs = durationMs || media.duration_sec * 1000 || 1
+  const pct = Math.min(100, (currentMs / totalMs) * 100)
+
   return (
     <div className="practice-page">
       <h1>{media.original_name}</h1>
@@ -382,9 +385,10 @@ export default function PracticePage() {
           className="player-seek"
           type="range"
           min={0}
-          max={durationMs || media.duration_sec * 1000 || 1}
+          max={totalMs}
           value={currentMs}
           onChange={(e) => seekTo(Number(e.target.value))}
+          style={{ background: `linear-gradient(to right, var(--accent) ${pct}%, var(--line) ${pct}%)` }}
         />
         <button className="player-mute" onClick={toggleMute} aria-label={muted ? '取消静音' : '静音'}>
           {muted ? '🔇' : '🔊'}
