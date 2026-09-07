@@ -2,12 +2,12 @@
 
 /* 职事英语 · 按 ministrybooks.org 的属灵书卷风格重设 */
 :root {
-  --bg: #f6efe3;            /* 羊皮纸米色 */
-  --surface: #fdfaf3;       /* 卡片/输入面 */
-  --surface-2: #efe6d2;     /* 次级面 */
-  --ink: #20261f;           /* 深绿黑 */
-  --muted: #6f6a55;         /* 橄榄灰 */
-  --line: #ddd2b8;          /* 棕褐分隔 */
+  --bg: #ffffff;            /* 导航栏以外纯白 */
+  --surface: #ffffff;       /* 卡片/输入面（白，靠边线区分） */
+  --surface-2: #f5f4f0;     /* 次级面 */
+  --ink: #1f2420;           /* 深绿黑 */
+  --muted: #6e6e63;         /* 灰（白底可读） */
+  --line: #e5e1d6;          /* 浅灰棕分隔 */
   --accent: #2e8a25;        /* 鲜绿（按钮/高亮） */
   --accent-strong: #1e4422; /* 深森林绿（品牌） */
   --accent-ink: #ffffff;    /* 绿底上的字 */
