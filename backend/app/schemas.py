@@ -181,6 +181,9 @@ class StudySessionOut(BaseModel):
     current_card: Optional[StudyCardOut] = None
     current_number: int
     total: int
+    unique_total: int
+    unique_done: int
+    repeat_count: int
     completed: bool
     ratings: dict[str, int]
 

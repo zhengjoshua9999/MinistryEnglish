@@ -19,12 +19,17 @@ const LEGACY_RATING: Record<Rating, 'again' | 'hard' | 'good'> = {
 }
 
 function legacySession(mode: 'new' | 'due', queue: LegacyEntry[], index: number, ratings?: StudySession['ratings']): StudySession {
+  const uniqueTotal = new Set(queue.map((e) => e.card.id)).size
+  const uniqueDone = new Set(queue.slice(0, index).map((e) => e.card.id)).size
   return {
     id: 'legacy',
     mode,
     current_card: queue[index]?.card ?? null,
     current_number: Math.min(index + 1, queue.length),
     total: queue.length,
+    unique_total: uniqueTotal,
+    unique_done: uniqueDone,
+    repeat_count: Math.max(0, queue.length - uniqueTotal),
     completed: index >= queue.length && queue.length > 0,
     ratings: ratings ?? { known: 0, fuzzy: 0, unknown: 0 },
   }
@@ -360,7 +365,9 @@ export default function ReviewPage({
         <header className="review-header">
           <button className="review-back" onClick={onExit} aria-label="退出学习">‹</button>
           <div className="review-progress">
-            {session && session.total > 0 ? `${session.current_number} / ${session.total}` : mode === 'new' ? '学习' : '复习'}
+            {session && (session.unique_total ?? session.total) > 0
+              ? `${session.unique_done ?? session.current_number} / ${session.unique_total ?? session.total}${session.repeat_count ? ` · 重试 ${session.repeat_count}` : ''}`
+              : mode === 'new' ? '学习' : '复习'}
           </div>
           <div className="review-modes" aria-label="切换学习模式">
             <button className={mode === 'new' ? 'active' : ''} onClick={() => setMode('new')}>新学</button>

@@ -376,12 +376,17 @@ def _session_out(session: VocabStudySession, db: Session) -> StudySessionOut:
     elif session.current_index != start_index:
         db.commit()
     ratings = json.loads(session.rating_counts_json)
+    unique_total = session.initial_count or len(queue)
+    unique_done = sum(ratings.values()) if isinstance(ratings, dict) else 0
     return StudySessionOut(
         id=session.id,
         mode=session.mode,
         current_card=current_card,
         current_number=min(session.current_index + 1, len(queue)),
         total=len(queue),
+        unique_total=unique_total,
+        unique_done=unique_done,
+        repeat_count=max(0, len(queue) - unique_total),
         completed=completed,
         ratings=ratings,
     )

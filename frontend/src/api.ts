@@ -119,6 +119,9 @@ export interface StudySession {
   current_card: StudyCard | null
   current_number: number
   total: number
+  unique_total: number
+  unique_done: number
+  repeat_count: number
   completed: boolean
   ratings: Record<'known' | 'fuzzy' | 'unknown', number>
 }
