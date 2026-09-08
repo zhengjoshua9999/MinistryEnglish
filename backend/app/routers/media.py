@@ -16,6 +16,9 @@ router = APIRouter(tags=["media"])
 
 SUPPORTED_EXTS = {".mp3", ".wav", ".m4a", ".mp4", ".mov", ".mkv", ".aac", ".flac"}
 
+# 转写中允许取消：删除文件时登记该 media_id，后台转录线程会在每个批次边界检查并停手。
+_CANCELLED: set[int] = set()
+
 
 def _run_transcription(media_id: int, src_path: str):
     """Runs in a background thread: extract audio -> Whisper（分段流式）-> DeepSeek 润色 -> 分批落库。
@@ -36,6 +39,8 @@ def _run_transcription(media_id: int, src_path: str):
         idx = 0
         last_text_norm = None  # 兜底去重：即便解码层参数没能完全防住，连续复读的整句也不落库
         for raw_sentences, progress in whisper_service.transcribe_chunks(wav_path, db, media.duration_sec):
+            if media_id in _CANCELLED:
+                break  # 用户已取消（删除）
             polished_texts = deepseek_service.polish_sentences([s["text"] for s in raw_sentences])
             for s, polished in zip(raw_sentences, polished_texts):
                 text_norm = " ".join(s["text"].split()).lower()
@@ -55,11 +60,22 @@ def _run_transcription(media_id: int, src_path: str):
                 last_text_norm = text_norm
             media.progress = progress
             db.commit()
+            if media_id in _CANCELLED:
+                break
+
+        if media_id in _CANCELLED:
+            # 已取消：清掉本线程可能残留的句子，结束（等待删除已清理其余内容）。
+            _CANCELLED.discard(media_id)
+            db.rollback()
+            db.query(Sentence).filter(Sentence.media_id == media_id).delete()
+            db.commit()
+            return
 
         media.status = "ready"
         media.progress = 1.0
         db.commit()
     except Exception as e:  # noqa: BLE001
+        _CANCELLED.discard(media_id)
         media = db.get(MediaFile, media_id)
         if media is None:
             return  # 转录过程中这条媒体已经被删除，没有行可以写错误状态了
@@ -157,9 +173,9 @@ def delete_media(media_id: int, db: Session = Depends(get_db)):
     media = db.get(MediaFile, media_id)
     if not media:
         raise HTTPException(404, "找不到该媒体文件")
+    # 允许在转写中取消：先登记取消信号，让后台转录线程尽快停手，再走常规删除。
     if media.status == "transcribing":
-        # 后台转录线程持有自己的 db session，此时删除会导致它写状态时扑空——先拒绝，等转录结束再删
-        raise HTTPException(409, "该文件正在转录中，请等待处理完成后再删除")
+        _CANCELLED.add(media_id)
 
     # Sentence 靠 ORM cascade 跟着 media 一起删；PracticeAttempt 脱离了句子/媒体就没有意义，
     # 这里一并清理（连同录音文件）。VocabWord 是学习成果，即使原媒体删了也保留。
