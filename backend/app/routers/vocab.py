@@ -10,7 +10,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import PlainTextResponse
 from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from app import config
 from app.database import get_db
@@ -145,7 +145,7 @@ def mark_word(payload: VocabWordCreate, db: Session = Depends(get_db)):
 
 @router.get("/vocab", response_model=list[VocabWordOut])
 def list_vocab(status: Optional[str] = None, db: Session = Depends(get_db)):
-    q = db.query(VocabWord)
+    q = db.query(VocabWord).options(joinedload(VocabWord.media))
     if status:
         q = q.filter(VocabWord.status == status)
     return q.order_by(VocabWord.created_at.desc()).all()

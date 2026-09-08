@@ -64,6 +64,7 @@ export interface VocabWord {
   media_id: number | null
   sentence_id: number | null
   source_type: string
+  source_media_name: string | null
   context_text: string
   definition: string
   translation: string

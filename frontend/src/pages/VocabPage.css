@@ -307,6 +307,14 @@
   line-height: 1.5;
 }
 
+.vocab-source {
+  font-size: 12px;
+  color: var(--gold);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .vocab-audio-row {
   display: flex;
   gap: 6px;

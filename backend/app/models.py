@@ -131,6 +131,14 @@ class VocabWord(Base):
     suspended_at: Mapped[Optional[datetime]] = mapped_column(default=None)
     created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
 
+    media: Mapped[Optional["MediaFile"]] = relationship()
+
+    @property
+    def source_media_name(self) -> Optional[str]:
+        """生词来源的转写/媒体文件名（用于单词本展示“出自哪个文件”）。"""
+        media = self.media
+        return media.original_name if media else None
+
 
 class VocabReviewLog(Base):
     __tablename__ = "vocab_review_log"

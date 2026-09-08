@@ -242,6 +242,7 @@ export default function VocabPage() {
               {w.definition && <p className="vocab-def">{w.definition}</p>}
               {w.translation && <p className="vocab-trans">{w.translation}</p>}
               <p className="vocab-example">{w.context_text}</p>
+              {w.source_media_name && <p className="vocab-source">来源：{w.source_media_name}</p>}
               <div className="vocab-audio-row">
                 {w.context_audio_path && (
                   <button onClick={() => play(audioClipUrl(w.context_audio_path))}>▶ 原声</button>

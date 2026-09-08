@@ -92,6 +92,7 @@ class VocabWordOut(BaseModel):
     media_id: Optional[int] = None
     sentence_id: Optional[int] = None
     source_type: str
+    source_media_name: Optional[str] = None
     context_text: str
     definition: str
     translation: str
