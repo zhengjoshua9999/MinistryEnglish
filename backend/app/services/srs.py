@@ -2,49 +2,72 @@ from datetime import datetime, timedelta
 from typing import Optional
 
 RATINGS = ("known", "fuzzy", "unknown")
-STAGE_INTERVALS = (
-    timedelta(minutes=10),
-    timedelta(days=1),
-    timedelta(days=3),
-    timedelta(days=7),
-    timedelta(days=15),
-    timedelta(days=30),
-    timedelta(days=60),
-    timedelta(days=120),
-)
+# 各阶段复习间隔（天），按本地自然日对齐：首学第二天统一复习，之后按此递增。
+STAGE_INTERVALS_DAYS = (1, 2, 3, 7, 14, 30)
+MASTER_STAGE = len(STAGE_INTERVALS_DAYS) - 1
+MIN_INTERVAL_DAYS = 1
+
+
+def day_start(reference: Optional[datetime] = None) -> datetime:
+    """本地自然日的起点（当天 00:00）。"""
+    reference = reference or datetime.now()
+    return reference.replace(hour=0, minute=0, second=0, microsecond=0)
+
+
+def due_at_for(reference: datetime, interval_days: int) -> datetime:
+    """以 reference 所在自然日的 00:00 为基准，加上间隔天数，得到某天 00:00（本地）。"""
+    return day_start(reference) + timedelta(days=interval_days)
 
 
 def apply_review(word, rating: str, now: Optional[datetime] = None) -> None:
-    """按阶段间隔和三档自评更新排程；所有时间均为 naive UTC。"""
+    """按本地自然日 + 整天间隔更新排程。
+
+    新词首学：无论评分，统一安排到「次日」复习（due 对齐到第二天 00:00）；
+    之后的复习按 known/fuzzy/unknown 递增整天间隔，绝不安排当天/按小时复习。
+    """
     if rating not in RATINGS:
         raise ValueError(f"bad rating: {rating}")
-    now = now or datetime.utcnow()
-    stage = max(0, min(int(word.memory_stage or 0), len(STAGE_INTERVALS) - 1))
+    now = now or datetime.now()
+    stage = max(0, min(int(word.memory_stage or 0), MASTER_STAGE))
 
-    if word.first_learned_at is None:
+    first = word.first_learned_at is None
+    if first:
         word.first_learned_at = now
 
-    if rating == "known":
-        stage = min(stage + 1, len(STAGE_INTERVALS) - 1)
-        word.known_streak = (word.known_streak or 0) + 1
-        interval = STAGE_INTERVALS[stage]
-    elif rating == "fuzzy":
-        word.known_streak = 0
-        base = STAGE_INTERVALS[stage]
-        interval = timedelta(minutes=10) if stage == 0 else max(timedelta(days=1), base / 2)
+    if first:
+        # 首学：一律第二天复习，按评分只影响初始阶段与强弱标记。
+        if rating == "known":
+            word.memory_stage = 1
+            word.known_streak = 1
+        elif rating == "unknown":
+            word.memory_stage = 0
+            word.known_streak = 0
+            word.lapses = (word.lapses or 0) + 1
+        else:  # fuzzy
+            word.memory_stage = 0
+            word.known_streak = 0
+        interval_days = MIN_INTERVAL_DAYS
     else:
-        word.lapses = (word.lapses or 0) + 1
-        word.known_streak = 0
-        stage = 0
-        interval = STAGE_INTERVALS[0]
+        if rating == "known":
+            stage = min(stage + 1, MASTER_STAGE)
+            word.known_streak = (word.known_streak or 0) + 1
+            interval_days = STAGE_INTERVALS_DAYS[stage]
+        elif rating == "fuzzy":
+            word.known_streak = 0
+            interval_days = max(MIN_INTERVAL_DAYS, STAGE_INTERVALS_DAYS[stage] // 2)
+        else:
+            word.lapses = (word.lapses or 0) + 1
+            word.known_streak = 0
+            stage = 0
+            interval_days = MIN_INTERVAL_DAYS
+        word.memory_stage = stage
 
-    word.memory_stage = stage
     word.reps = (word.reps or 0) + 1
-    word.interval_days = interval.total_seconds() / 86400
     word.last_reviewed_at = now
     word.last_rating = rating
-    word.due_at = now + interval
-    word.status = "mastered" if stage >= 6 and word.known_streak >= 3 else "reviewing"
+    word.interval_days = float(interval_days)
+    word.due_at = due_at_for(now, interval_days)
+    word.status = "mastered" if word.memory_stage >= MASTER_STAGE and word.known_streak >= 3 else "reviewing"
 
 
 def derive_card(word, weak_count: int = 0) -> dict:

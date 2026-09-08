@@ -156,7 +156,7 @@ def update_status(vocab_id: int, payload: VocabStatusUpdate, db: Session = Depen
     vocab = db.get(VocabWord, vocab_id)
     if not vocab:
         raise HTTPException(404, "找不到该生词")
-    now = datetime.utcnow()
+    now = datetime.now()
     if payload.status == "new":
         vocab.status = "new"
         vocab.memory_stage = 0
@@ -252,7 +252,7 @@ def _active_session(db: Session, mode: Optional[str] = None) -> Optional[VocabSt
 @router.get("/vocab/study/summary", response_model=StudySummaryOut)
 def study_summary(db: Session = Depends(get_db)):
     counts = dict(db.query(VocabWord.status, func.count(VocabWord.id)).group_by(VocabWord.status).all())
-    now = datetime.utcnow()
+    now = datetime.now()
     due = (
         db.query(VocabWord)
         .filter(
@@ -302,7 +302,7 @@ def update_study_settings(payload: StudySettingsUpdate, db: Session = Depends(ge
 @router.get("/vocab/study/queue", response_model=list[StudyCardOut])
 def study_queue(kind: str = "due", limit: Optional[int] = None, db: Session = Depends(get_db)):
     """兼容旧前端的只读队列；新前端使用可恢复的 sessions 接口。"""
-    now = datetime.utcnow()
+    now = datetime.now()
     settings = _settings(db)
     effective_limit = limit or (settings.new_group_size if kind == "new" else settings.review_group_size)
     q = (
@@ -371,7 +371,7 @@ def _session_out(session: VocabStudySession, db: Session) -> StudySessionOut:
 
     completed = session.current_index >= len(queue)
     if completed and session.completed_at is None:
-        session.completed_at = datetime.utcnow()
+        session.completed_at = datetime.now()
         db.commit()
     elif session.current_index != start_index:
         db.commit()
@@ -407,7 +407,7 @@ def create_study_session(payload: StudySessionCreate, db: Session = Depends(get_
 
     cards = study_queue(payload.mode, limit=max(1, limit), db=db) if limit > 0 else []
     queue = [{"vocab_id": card["id"], "formal": True, "repeat_count": 0} for card in cards]
-    now = datetime.utcnow()
+    now = datetime.now()
     session = VocabStudySession(
         id=str(uuid.uuid4()),
         mode=payload.mode,
@@ -480,7 +480,7 @@ def review_session_word(session_id: str, payload: ReviewIn, db: Session = Depend
         stage_before = word.memory_stage
         due_before = word.due_at
         was_new = word.first_learned_at is None
-        reviewed_at = datetime.utcnow()
+        reviewed_at = datetime.now()
         srs.apply_review(word, payload.rating, reviewed_at)
         db.add(VocabReviewLog(
             vocab_id=word.id,
@@ -513,9 +513,9 @@ def review_session_word(session_id: str, payload: ReviewIn, db: Session = Depend
 
     session.current_index += 1
     session.queue_json = json.dumps(queue)
-    session.updated_at = datetime.utcnow()
+    session.updated_at = datetime.now()
     if session.current_index >= len(queue):
-        session.completed_at = datetime.utcnow()
+        session.completed_at = datetime.now()
     db.commit()
     db.refresh(session)
     return _session_out(session, db)

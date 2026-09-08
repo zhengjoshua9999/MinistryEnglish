@@ -115,3 +115,23 @@ def migrate_vocab_schedule():
                 ELSE 'reviewing' END
             WHERE last_reviewed_at IS NOT NULL
         """))
+
+    # 把已有词的排程重对齐到「本地自然日 / 整天」：旧的 10 分钟、半天间隔会导致
+    # 当天/按小时复习，这里统一重算为至少 1 天并落到“某天 00:00”。
+    from app.models import VocabWord
+    from app.services.srs import due_at_for
+
+    import math
+
+    db = SessionLocal()
+    try:
+        for w in db.query(VocabWord).filter(
+            VocabWord.first_learned_at.isnot(None), VocabWord.due_at.isnot(None)
+        ).all():
+            days = max(1, math.ceil(w.interval_days or 0))
+            ref = w.last_reviewed_at or w.first_learned_at
+            w.interval_days = float(days)
+            w.due_at = due_at_for(ref, days)
+        db.commit()
+    finally:
+        db.close()
