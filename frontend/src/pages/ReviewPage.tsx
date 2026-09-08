@@ -120,6 +120,8 @@ export default function ReviewPage({
   const [showSummary, setShowSummary] = useState(false)
   const [summaryWords, setSummaryWords] = useState<SessionWord[]>([])
   const [remain, setRemain] = useState(0)
+  const [summaryLoading, setSummaryLoading] = useState(false)
+  const [summaryError, setSummaryError] = useState('')
   const [showContext, setShowContext] = useState(false)
 
   const startSpelling = useCallback(async (sessionId: string, skipInteractive: boolean) => {
@@ -309,12 +311,24 @@ export default function ReviewPage({
 
   const openSummary = useCallback(() => {
     if (!session) return
-    api.getSessionWords(session.id).then(setSummaryWords).catch(() => {})
+    setShowSummary(true)
+    setSummaryLoading(true)
+    setSummaryError('')
+    setSummaryWords([])
+    api
+      .getSessionWords(session.id)
+      .then((words) => {
+        setSummaryWords(words)
+        setSummaryLoading(false)
+      })
+      .catch(() => {
+        setSummaryLoading(false)
+        setSummaryError('加载本组单词失败，请检查服务后重试。')
+      })
     api
       .studySummary()
       .then((s) => setRemain(s.total - s.mastered))
-      .catch(() => setRemain(0))
-    setShowSummary(true)
+      .catch(() => {})
   }, [session])
 
   const continueSummary = useCallback(() => {
@@ -359,23 +373,34 @@ export default function ReviewPage({
           <div className="review-progress">小结</div>
           <span />
         </header>
-        <div className="summary-banner">💡 快速回顾本组单词吧~</div>
-        <ul className="summary-list">
-          {summaryWords.map((w) => (
-            <li key={w.word} className="summary-item">
-              <span className="summary-word">{w.word}</span>
-              <span className={`summary-status ${w.status === 'mastered' ? 'done' : ''}`}>{reviewLabel(w)}</span>
-            </li>
-          ))}
-        </ul>
-        <div className="summary-footer">
-          <p>
-            已复习 <strong>{summaryWords.length}</strong> 词，还剩 <strong>{remain}</strong> 词
-          </p>
-          <button className="continue-btn" onClick={continueSummary}>
-            继续复习
-          </button>
-        </div>
+        {summaryLoading ? (
+          <p className="review-state">正在加载小结…</p>
+        ) : summaryError ? (
+          <div className="review-state">
+            <p>{summaryError}</p>
+            <button onClick={openSummary}>重试</button>
+          </div>
+        ) : (
+          <>
+            <div className="summary-banner">💡 快速回顾本组单词吧~</div>
+            <ul className="summary-list">
+              {summaryWords.map((w) => (
+                <li key={w.word} className="summary-item">
+                  <span className="summary-word">{w.word}</span>
+                  <span className={`summary-status ${w.status === 'mastered' ? 'done' : ''}`}>{reviewLabel(w)}</span>
+                </li>
+              ))}
+            </ul>
+            <div className="summary-footer">
+              <p>
+                已复习 <strong>{summaryWords.length}</strong> 词，还剩 <strong>{remain}</strong> 词
+              </p>
+              <button className="continue-btn" onClick={continueSummary}>
+                继续复习
+              </button>
+            </div>
+          </>
+        )}
       </div>
     )
   }
