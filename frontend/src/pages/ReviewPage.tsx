@@ -70,6 +70,9 @@ interface SessionWord {
   pos: string
   definition: string
   translation: string
+  us_audio_path?: string
+  uk_audio_path?: string
+  context_audio_path?: string
   status?: string
   memory_stage?: number
   interval_days?: number
@@ -124,11 +127,18 @@ export default function ReviewPage({
   const [summaryError, setSummaryError] = useState('')
   const [showContext, setShowContext] = useState(false)
 
+  // 当前拼写词及其“是否有释义”判断（无释义时用发音当提示）。
+  const spellWord = spell && spell.idx < spell.words.length ? spell.words[spell.idx] : null
+  const spellHasMeaning = !!((spellWord?.translation || '').trim() || (spellWord?.definition || '').trim())
+
   const startSpelling = useCallback(async (sessionId: string, skipInteractive: boolean) => {
-    // 只保留“有释义”的词来做听写；没有释义的无法作为提示，跳过。
-    const words = (await api.getSessionWords(sessionId)).filter(
-      (w) => (w.translation || '').trim() || (w.definition || '').trim()
-    )
+    // 出题提示：优先中文释义；无释义的词用“发音”当提示（听音拼写）。
+    // 既没有释义也没有发音的词无法作提示，跳过。
+    const words = (await api.getSessionWords(sessionId)).filter((w) => {
+      const hasMeaning = (w.translation || '').trim() || (w.definition || '').trim()
+      const hasAudio = w.us_audio_path || w.uk_audio_path || w.context_audio_path
+      return hasMeaning || hasAudio
+    })
     setSpell({
       words,
       idx: skipInteractive ? words.length : 0,
@@ -302,6 +312,14 @@ export default function ReviewPage({
     return () => clearTimeout(t)
   }, [spell?.showCorrect])
 
+  // 无释义的词，用“发音”当提示：出现时自动播一次发音。
+  useEffect(() => {
+    if (!spellWord || spell?.reveal || spell?.showCorrect || spellHasMeaning) return
+    const url = spellWord.us_audio_path || spellWord.uk_audio_path || spellWord.context_audio_path
+    if (url) play(audioClipUrl(url))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [spell?.idx, spellHasMeaning])
+
   const reinforceSpell = useCallback(() => {
     setSpell((s) => {
       if (!s || !s.wrong.length) return s
@@ -438,9 +456,29 @@ export default function ReviewPage({
                 {spell.idx + 1} / {spell.words.length}
               </p>
               <div className="spell-prompt">
-                {spell.words[spell.idx].pos && <span className="spell-pos">{spell.words[spell.idx].pos}</span>}
-                <span>{spell.words[spell.idx].translation || spell.words[spell.idx].definition || '暂无释义，请凭原句回忆'}</span>
+                {spellHasMeaning ? (
+                  <>
+                    {spell.words[spell.idx].pos && <span className="spell-pos">{spell.words[spell.idx].pos}</span>}
+                    <span>{spell.words[spell.idx].translation || spell.words[spell.idx].definition}</span>
+                  </>
+                ) : (
+                  <span className="spell-audio-hint">🔊 听发音，拼写单词</span>
+                )}
               </div>
+              {!spellHasMeaning && (spell.words[spell.idx].us_audio_path || spell.words[spell.idx].uk_audio_path) && (
+                <button
+                  className="spell-audio-btn"
+                  onClick={() =>
+                    play(
+                      audioClipUrl(
+                        spell.words[spell.idx].us_audio_path || spell.words[spell.idx].uk_audio_path || ''
+                      )
+                    )
+                  }
+                >
+                  🔊 重新听发音
+                </button>
+              )}
               <input
                 className={`spell-input${spell.reveal ? ' wrong' : spell.showCorrect ? ' correct' : ''}`}
                 value={spell.input}
