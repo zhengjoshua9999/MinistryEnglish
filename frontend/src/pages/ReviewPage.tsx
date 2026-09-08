@@ -53,6 +53,9 @@ interface SpellWord {
   pos: string
   definition: string
   translation: string
+  us_audio_path?: string
+  uk_audio_path?: string
+  context_audio_path?: string
 }
 
 interface SpellState {
