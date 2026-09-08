@@ -382,7 +382,9 @@
 }
 .spell-input:focus { outline: none; border-color: var(--accent); }
 .spell-input.wrong { color: var(--bad); border-color: var(--bad); }
+.spell-input.correct { color: var(--good); border-color: var(--good); }
 .spell-answer { color: var(--good); font-size: 18px; font-family: var(--serif); }
+.spell-answer.correct-check { color: var(--good); }
 .spell-result { color: var(--muted); font-size: 15px; }
 .no-spelling-toggle {
   display: flex;

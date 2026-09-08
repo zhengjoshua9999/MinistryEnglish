@@ -62,6 +62,7 @@ interface SpellState {
   wrong: SpellWord[]
   reveal: boolean
   correct: number
+  showCorrect: boolean
 }
 
 interface SessionWord {
@@ -123,6 +124,7 @@ export default function ReviewPage({
       wrong: [],
       reveal: false,
       correct: 0,
+      showCorrect: false,
     })
   }, [])
 
@@ -269,20 +271,32 @@ export default function ReviewPage({
       if (!w) return s
       if (s.reveal) {
         const next = s.idx + 1
-        return { ...s, idx: next, input: '', reveal: false }
+        if (next >= s.words.length) setPhase('result')
+        return { ...s, idx: next, input: '', reveal: false, showCorrect: false }
       }
       if (norm(s.input) === norm(w.word)) {
-        const next = s.idx + 1
-        return { ...s, idx: next, input: '', reveal: false, correct: s.correct + 1 }
+        // 拼对：先用绿色显示该词，随后的 effect 自动进入下一题。
+        return { ...s, input: w.word, reveal: false, correct: s.correct + 1, showCorrect: true }
       }
-      return { ...s, wrong: s.wrong.some((x) => x.word === w.word) ? s.wrong : [...s.wrong, w], reveal: true }
+      return { ...s, wrong: s.wrong.some((x) => x.word === w.word) ? s.wrong : [...s.wrong, w], reveal: true, showCorrect: false }
     })
   }, [])
+
+  // 拼对后短暂显示绿色单词，再自动进入下一题。
+  useEffect(() => {
+    if (!spell?.showCorrect) return
+    const isLast = spell.idx + 1 >= spell.words.length
+    const t = setTimeout(() => {
+      setSpell((s) => (s ? { ...s, idx: Math.min(s.idx + 1, s.words.length), input: '', reveal: false, showCorrect: false } : s))
+      if (isLast) setPhase('result')
+    }, 750)
+    return () => clearTimeout(t)
+  }, [spell?.showCorrect])
 
   const reinforceSpell = useCallback(() => {
     setSpell((s) => {
       if (!s || !s.wrong.length) return s
-      return { words: s.wrong, idx: 0, input: '', wrong: [], reveal: false, correct: 0 }
+      return { words: s.wrong, idx: 0, input: '', wrong: [], reveal: false, correct: 0, showCorrect: false }
     })
   }, [])
 
@@ -396,22 +410,27 @@ export default function ReviewPage({
                 <span>{spell.words[spell.idx].translation || spell.words[spell.idx].definition}</span>
               </div>
               <input
-                className={`spell-input${spell.reveal ? ' wrong' : ''}`}
+                className={`spell-input${spell.reveal ? ' wrong' : spell.showCorrect ? ' correct' : ''}`}
                 value={spell.input}
                 onChange={(e) => setSpell((s) => (s ? { ...s, input: e.target.value } : s))}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
                     e.preventDefault()
-                    checkSpell()
+                    if (!spell.reveal && !spell.showCorrect) checkSpell()
                   }
                 }}
                 placeholder="输入你听到/看到的单词…"
                 autoFocus
                 autoComplete="off"
-                disabled={spell.reveal}
+                disabled={spell.reveal || spell.showCorrect}
               />
               {spell.reveal && <p className="spell-answer">正确答案：{spell.words[spell.idx].word}</p>}
-              <button className="primary" disabled={!spell.reveal && !spell.input.trim()} onClick={checkSpell}>
+              {spell.showCorrect && <p className="spell-answer correct-check">✓ {spell.words[spell.idx].word}</p>}
+              <button
+                className="primary"
+                disabled={spell.showCorrect || (!spell.reveal && !spell.input.trim())}
+                onClick={checkSpell}
+              >
                 {spell.reveal ? '下一题' : '检查'}
               </button>
             </section>
