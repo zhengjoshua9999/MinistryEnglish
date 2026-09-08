@@ -440,9 +440,11 @@ export default function ReviewPage({
                 {spell?.words.length ?? session.total} 个
               </p>
               <div className="review-done-actions">
-                <button className="primary" disabled={!spell?.wrong.length} onClick={reinforceSpell}>
-                  强化拼写
-                </button>
+                {spell && spell.wrong.length > 0 && (
+                  <button className="primary" onClick={reinforceSpell}>
+                    强化拼写
+                  </button>
+                )}
                 <button onClick={openSummary}>小结</button>
               </div>
               <label className="no-spelling-toggle">
