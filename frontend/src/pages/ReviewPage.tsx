@@ -271,8 +271,7 @@ export default function ReviewPage({
       if (!w) return s
       if (s.reveal) {
         const next = s.idx + 1
-        if (next >= s.words.length) setPhase('result')
-        return { ...s, idx: next, input: '', reveal: false, showCorrect: false }
+        return { ...s, idx: Math.min(next, s.words.length), input: '', reveal: false, showCorrect: false }
       }
       if (norm(s.input) === norm(w.word)) {
         // 拼对：先用绿色显示该词，随后的 effect 自动进入下一题。
@@ -285,10 +284,8 @@ export default function ReviewPage({
   // 拼对后短暂显示绿色单词，再自动进入下一题。
   useEffect(() => {
     if (!spell?.showCorrect) return
-    const isLast = spell.idx + 1 >= spell.words.length
     const t = setTimeout(() => {
       setSpell((s) => (s ? { ...s, idx: Math.min(s.idx + 1, s.words.length), input: '', reveal: false, showCorrect: false } : s))
-      if (isLast) setPhase('result')
     }, 750)
     return () => clearTimeout(t)
   }, [spell?.showCorrect])
