@@ -103,6 +103,28 @@
   cursor: pointer;
 }
 
+.flashcard-audio-btns {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.audio-replay {
+  border: 1px solid var(--accent);
+  background: var(--surface);
+  color: var(--accent);
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.audio-replay:hover {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
 .flashcard-weak {
   margin-top: 12px;
   padding: 3px 10px;

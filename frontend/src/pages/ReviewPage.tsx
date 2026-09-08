@@ -440,7 +440,14 @@ export default function ReviewPage({
             <section className={`flashcard ${answerCard ? 'is-revealed' : ''}`}>
               <div className="flashcard-heading">
                 <h1>{shownCard.word}</h1>
-                <button className="audio-main" onClick={() => play(preferredAudio(shownCard, settings))} aria-label="播放首选发音">⌁</button>
+                <div className="flashcard-audio-btns">
+                  <button className="audio-main" onClick={() => play(preferredAudio(shownCard, settings))} aria-label="播放首选发音">⌁</button>
+                  {shownCard.context_audio_path && (
+                    <button className="audio-replay" onClick={() => play(shownCard.context_audio_path)} aria-label="重放原声例句">
+                      ↻ 原声
+                    </button>
+                  )}
+                </div>
               </div>
               {shownCard.pronunciation_weak && <span className="flashcard-weak">发音待加强</span>}
 
