@@ -381,6 +381,7 @@
   text-align: center;
 }
 .spell-input:focus { outline: none; border-color: var(--accent); }
+.spell-input.wrong { color: var(--bad); border-color: var(--bad); }
 .spell-answer { color: var(--good); font-size: 18px; font-family: var(--serif); }
 .spell-result { color: var(--muted); font-size: 15px; }
 .no-spelling-toggle {

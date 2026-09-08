@@ -396,7 +396,7 @@ export default function ReviewPage({
                 <span>{spell.words[spell.idx].translation || spell.words[spell.idx].definition}</span>
               </div>
               <input
-                className="spell-input"
+                className={`spell-input${spell.reveal ? ' wrong' : ''}`}
                 value={spell.input}
                 onChange={(e) => setSpell((s) => (s ? { ...s, input: e.target.value } : s))}
                 onKeyDown={(e) => {
