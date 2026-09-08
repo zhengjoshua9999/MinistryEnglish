@@ -123,7 +123,10 @@ export default function ReviewPage({
   const [showContext, setShowContext] = useState(false)
 
   const startSpelling = useCallback(async (sessionId: string, skipInteractive: boolean) => {
-    const words = await api.getSessionWords(sessionId)
+    // 只保留“有释义”的词来做听写；没有释义的无法作为提示，跳过。
+    const words = (await api.getSessionWords(sessionId)).filter(
+      (w) => (w.translation || '').trim() || (w.definition || '').trim()
+    )
     setSpell({
       words,
       idx: skipInteractive ? words.length : 0,
@@ -411,7 +414,7 @@ export default function ReviewPage({
               </p>
               <div className="spell-prompt">
                 {spell.words[spell.idx].pos && <span className="spell-pos">{spell.words[spell.idx].pos}</span>}
-                <span>{spell.words[spell.idx].translation || spell.words[spell.idx].definition}</span>
+                <span>{spell.words[spell.idx].translation || spell.words[spell.idx].definition || '暂无释义，请凭原句回忆'}</span>
               </div>
               <input
                 className={`spell-input${spell.reveal ? ' wrong' : spell.showCorrect ? ' correct' : ''}`}
