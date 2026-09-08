@@ -81,8 +81,15 @@ interface SessionWord {
 const reviewLabel = (w: SessionWord): string => {
   if (w.status === 'mastered') return '复习完成'
   if (!w.due_at) return '待安排'
-  const days = Math.max(0, Math.ceil((new Date(w.due_at).getTime() - Date.now()) / 86400000))
-  return days <= 0 ? '今天复习' : `${days}天后复习`
+  // 按本地“自然日”差计算，避免小时/时区导致的误差。
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const due = new Date(w.due_at)
+  due.setHours(0, 0, 0, 0)
+  const diff = Math.round((due.getTime() - today.getTime()) / 86400000)
+  if (diff <= 0) return '今天复习'
+  if (diff === 1) return '明天复习'
+  return `${diff}天后复习`
 }
 
 export default function ReviewPage({
