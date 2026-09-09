@@ -13,7 +13,8 @@ export default function MaterialCollectionPage() {
   const navigate = useNavigate()
   const refresh = useCallback(async () => {
     const [media, groups] = await Promise.all([api.listMedia(), api.listCategories()])
-    setItems(media)
+    // 按文件名排序（数字自然序，如 Msg02 < Msg10），不受上传时间影响。
+    setItems([...media].sort((a, b) => a.original_name.localeCompare(b.original_name, undefined, { numeric: true })))
     setCategories(groups)
   }, [])
   useEffect(() => { refresh() }, [refresh])
