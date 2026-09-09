@@ -15,7 +15,7 @@
   flex-direction: column;
   gap: 12px;
   padding: 16px;
-  background: var(--surface-2);
+  background: var(--bg);
   border: 1px solid var(--line);
   border-radius: 14px;
 }
@@ -46,7 +46,7 @@
 .player-skip {
   flex: none;
   border: none;
-  background: none;
+  background: transparent;
   color: var(--muted);
   font-size: 15px;
   font-variant-numeric: tabular-nums;
