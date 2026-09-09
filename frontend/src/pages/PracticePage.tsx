@@ -221,6 +221,11 @@ export default function PracticePage() {
     const a = audioRef.current
     if (a) a.currentTime = ms / 1000
   }
+  const seekBy = (deltaSec: number) => {
+    const a = audioRef.current
+    if (!a) return
+    a.currentTime = Math.max(0, Math.min(a.duration || 0, a.currentTime + deltaSec))
+  }
   const togglePlay = () => {
     const a = audioRef.current
     if (!a) return
@@ -378,6 +383,9 @@ export default function PracticePage() {
         <button className="player-play" onClick={togglePlay} aria-label={isPlaying ? '暂停' : '播放'}>
           {isPlaying ? '⏸' : '▶'}
         </button>
+        <button className="player-skip" onClick={() => seekBy(-10)} aria-label="后退10秒">
+          −10s
+        </button>
         <span className="player-time">
           {fmtTime(currentMs)} / {fmtTime(durationMs || media.duration_sec * 1000)}
         </span>
@@ -390,6 +398,9 @@ export default function PracticePage() {
           onChange={(e) => seekTo(Number(e.target.value))}
           style={{ background: `linear-gradient(to right, var(--accent) ${pct}%, var(--line) ${pct}%)` }}
         />
+        <button className="player-skip" onClick={() => seekBy(10)} aria-label="前进10秒">
+          +10s
+        </button>
         <button className="player-mute" onClick={toggleMute} aria-label={muted ? '取消静音' : '静音'}>
           {muted ? '🔇' : '🔊'}
         </button>

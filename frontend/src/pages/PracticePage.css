@@ -44,6 +44,24 @@
   white-space: nowrap;
 }
 
+.player-skip {
+  flex: none;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--muted);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.player-skip:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
 .player-seek {
   flex: 1;
   min-width: 0;
