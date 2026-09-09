@@ -380,30 +380,34 @@ export default function PracticePage() {
       />
 
       <div className="audio-player">
-        <button className="player-play" onClick={togglePlay} aria-label={isPlaying ? '暂停' : '播放'}>
-          {isPlaying ? '⏸' : '▶'}
-        </button>
-        <button className="player-skip" onClick={() => seekBy(-10)} aria-label="后退10秒">
-          −10s
-        </button>
-        <span className="player-time">
-          {fmtTime(currentMs)} / {fmtTime(durationMs || media.duration_sec * 1000)}
-        </span>
-        <input
-          className="player-seek"
-          type="range"
-          min={0}
-          max={totalMs}
-          value={currentMs}
-          onChange={(e) => seekTo(Number(e.target.value))}
-          style={{ background: `linear-gradient(to right, var(--accent) ${pct}%, var(--line) ${pct}%)` }}
-        />
-        <button className="player-skip" onClick={() => seekBy(10)} aria-label="前进10秒">
-          +10s
-        </button>
-        <button className="player-mute" onClick={toggleMute} aria-label={muted ? '取消静音' : '静音'}>
-          {muted ? '🔇' : '🔊'}
-        </button>
+        <div className="player-controls">
+          <button className="player-skip" onClick={() => seekBy(-10)} aria-label="后退10秒">
+            ↺ 10
+          </button>
+          <button className="player-play" onClick={togglePlay} aria-label={isPlaying ? '暂停' : '播放'}>
+            {isPlaying ? '⏸' : '▶'}
+          </button>
+          <button className="player-skip" onClick={() => seekBy(10)} aria-label="前进10秒">
+            10 ↻
+          </button>
+        </div>
+        <div className="player-row">
+          <span className="player-time">
+            {fmtTime(currentMs)} / {fmtTime(durationMs || media.duration_sec * 1000)}
+          </span>
+          <input
+            className="player-seek"
+            type="range"
+            min={0}
+            max={totalMs}
+            value={currentMs}
+            onChange={(e) => seekTo(Number(e.target.value))}
+            style={{ background: `linear-gradient(to right, var(--accent) ${pct}%, var(--line) ${pct}%)` }}
+          />
+          <button className="player-mute" onClick={toggleMute} aria-label={muted ? '取消静音' : '静音'}>
+            {muted ? '🔇' : '🔊'}
+          </button>
+        </div>
       </div>
 
       <div className="toolbar">
